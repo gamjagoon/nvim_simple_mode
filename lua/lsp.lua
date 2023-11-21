@@ -17,16 +17,13 @@ vim.api.nvim_create_autocmd('LspAttach', {
   end,
 })
 
-local on_attach = require("plugins.configs.lspconfig").on_attach
-local capabilities = require("plugins.configs.lspconfig").capabilities
-
 local rt_opts = {
   -- rust-tools options
     tools = {
       executor = require('rust-tools/executors').termopen,
       on_initialized = nil,
       reload_workspace_from_cargo_toml = true,
-      hover_with_actions = true,
+      hover_with_actions = false,
       inlay_hints = {
         auto = true,
         only_current_line = false,
@@ -39,46 +36,35 @@ local rt_opts = {
         right_align_padding = 7,
         highlight = 'Comment',
       },
-      hover_actions = {
-        border = {
-          { '╭', 'FloatBorder' },
-          { '─', 'FloatBorder' },
-          { '╮', 'FloatBorder' },
-          { '│', 'FloatBorder' },
-          { '╯', 'FloatBorder' },
-          { '─', 'FloatBorder' },
-          { '╰', 'FloatBorder' },
-          { '│', 'FloatBorder' },
-        },
-        auto_focus = false,
-      },
       crate_graph = {
         backend = 'x11',
         output = nil,
         full = true,
       },
     },
-    server = {
-        -- on_attach is a callback called when the language server attachs to the buffer
-        on_attach = on_attach,
-        capabilities = capabilities,
-        settings = {
-          ['rust-analyzer'] = {
-            checkOnSave = {
-              comment = "clippy",
+    server = { 
+        on_attach = function(_, bufnr) 
+            -- Hover actions
+            vim.keymap.set("n", "<C-space>", rt.hover_actions.hover_actions, { buffer = bufnr })
+            -- Code action groups
+            vim.keymap.set("n", "<Leader>a", rt.code_action_group.code_action_group, { buffer = bufnr })
+        end,
+
+    },
+    settings = {
+        ['rust-analyzer'] = {
+        checkOnSave = { comment = "clippy", },
+        diagnostics = {
+            enable = true,
+            enableExperimental = true,
+        },
+        capabilites = lsp_capabilites,
+        inlayHints = { 
+            lifetimeElisionHints = { 
+                enable = true, 
+                useParameterNames = true,
             },
-            diagnostics = {
-                enable = true,
-                enableExperimental = true,
-            },
-            capabilites = lsp_capabilites,
-            inlayHints = {
-                lifetimeElisionHints = {
-                    enable = true,
-                    useParameterNames = true,
-                },
-            },
-          },
+        },
         },
     },
 }

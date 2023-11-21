@@ -1,6 +1,6 @@
 vim.opt.background="dark"
-vim.global.loaded_netrw = 1
-vim.global.loaded_netrwPlugin = 1
+vim.g.loaded_netrw = 1
+vim.g.loaded_netrwPlugin = 1
 vim.opt.termguicolors = true
 
 require("tokyonight").setup({
