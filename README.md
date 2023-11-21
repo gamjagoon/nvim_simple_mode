@@ -77,4 +77,4 @@ https://github.com/windwp/nvim-autopairs
 ## ToDo
 - [x] keymapping 추가하기 📅 2023-11-21 
 - [x] 설치할 Plugin 조사하기 📅 2023-11-21 
-- [ ] Plugin 추가 📅 2023-11-22 
+- [x] Plugin 추가 📅 2023-11-22 

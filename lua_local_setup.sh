@@ -1,5 +1,4 @@
 #!/bin/bash
-
 << COMMENT
 	Make config folder
 COMMENT
@@ -12,7 +11,7 @@ fi
 COMMENT
 if [ -d "$HOME/.config/nvim" ];then
     if [ -d "$HOME/.config/nvim_bak" ];then
-	rm -rf $HOME/.config/nvim_bak
+    rm -rf $HOME/.config/nvim_bak
     fi
     mv $HOME/.config/nvim $HOME/.config/nvim_bak
     mkdir $HOME/.config/nvim
