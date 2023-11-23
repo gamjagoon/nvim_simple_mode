@@ -5,9 +5,8 @@ return require('packer').startup(function(use)
     use "wbthomason/packer.nvim"
     -- colorscheme
     use 'folke/tokyonight.nvim'
-    use {
-        "neovim/nvim-lspconfig",
-    }
+    use "lukas-reineke/indent-blankline.nvim"
+    use "neovim/nvim-lspconfig"
     use "simrat39/rust-tools.nvim"
     use {'akinsho/bufferline.nvim', 
             tag = "*", 

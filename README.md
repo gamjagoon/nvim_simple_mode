@@ -32,6 +32,9 @@ https://github.com/nvim-lua/popup.nvim
 https://github.com/nvim-lua/plenary.nvim
 https://github.com/akinsho/bufferline.nvim
 
+### indent Guide
+https://github.com/lukas-reineke/indent-blankline.nvim
+
 ### SearchFile
 `telescope`를 사용해서 ripgrep을 integration함
 https://github.com/nvim-telescope/telescope.nvim#pickers
