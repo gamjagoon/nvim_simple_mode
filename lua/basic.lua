@@ -52,10 +52,6 @@ vmap.set({'n', 'v'}, 'Y', '"+Y', silent_opt)
 -- init lua
 vmap.set('n', '<leader>it','<cmd>e ~/.config/nvim/init.lua<cr>',silent_opt)
 
--- rust-tools
---vmap.set('n', '<space>ha', '<cmd>RustHoverActions<cr>', silent_opt)
---vmap.set('n', '<space>ca', '<cmd>RustCodeAction<cr>', silent_opt)
-
 -- telescope 
 local builtin = require('telescope.builtin')
 vim.keymap.set('n', '<space>ff', builtin.find_files, {})
@@ -83,4 +79,3 @@ vim.keymap.set('n', '<space>9', '<cmd>BufferLineGoToBuffer 9<cr>', {})
 
 -- highlight
 vim.cmd([[set cursorline]])
-vim.cmd([[hi LineNr ctermfg=Red]])

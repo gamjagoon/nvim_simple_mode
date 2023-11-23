@@ -7,10 +7,6 @@ return require('packer').startup(function(use)
     use 'folke/tokyonight.nvim'
     use {
         "neovim/nvim-lspconfig",
-	config = function()
-	      require "plugins.configs.lspconfig"
-	      require "custom.configs.lspconfig"
-	end,
     }
     use "simrat39/rust-tools.nvim"
     use {'akinsho/bufferline.nvim', 
