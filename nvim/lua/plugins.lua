@@ -14,6 +14,7 @@ return require('packer').startup(function(use)
             tag = "*", 
             requires = 'nvim-tree/nvim-web-devicons'
     }
+    use "RaafatTurki/hex.nvim"
     use {
         'nvim-telescope/telescope.nvim',
         requires = {

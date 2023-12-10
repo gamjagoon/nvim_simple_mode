@@ -189,3 +189,5 @@ require('gitsigns').setup {
     map('x', 'ih', ':<C-U>Gitsigns select_hunk<CR>')
   end
 }
+
+require 'hex'.setup()
