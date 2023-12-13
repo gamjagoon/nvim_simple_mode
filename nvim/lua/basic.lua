@@ -10,22 +10,22 @@ vopt.rnu = true
 vopt.ignorecase = true
 vopt.smartcase  = true
 vopt.hlsearch = true
+vim.cmd([[set smartindent]])
 vopt.wrap = false
 vopt.tabstop = 4
 vopt.shiftwidth = 4
-vopt.expandtab = true
 vopt.listchars = {space='·', tab = '>-', eol = '$'}
 vopt.list = true
 vopt.clipboard = "unnamedplus"
 vopt.tags = {"./tags"}
 vim.api.nvim_create_autocmd( 
-    {
-        "BufEnter",
-    },
-    {
-        pattern = "*.S,*.asm,*.s",
-        command = "set syntax=c"
-    }
+	{
+		"BufEnter",
+	},
+	{
+		pattern = "*.S,*.asm,*.s",
+		command = "set syntax=c"
+	}
 )
 
 
@@ -79,3 +79,5 @@ vim.keymap.set('n', '<space>9', '<cmd>BufferLineGoToBuffer 9<cr>', {})
 
 -- highlight
 vim.cmd([[set cursorline]])
+vim.cmd([[set cursorline]])
+vim.cmd([[autocmd FileType c,cpp,sh,bash setlocal noet ci pi sts=0 sw=4 ts=4]])
