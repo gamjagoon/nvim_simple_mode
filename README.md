@@ -1,4 +1,4 @@
-# Scatch
+# neovim simple mode
 
 ## Concepts
 1. Maintains a user-friendly concept similar to tmux, carrying over the settings from tmux.
