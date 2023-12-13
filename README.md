@@ -6,6 +6,14 @@
 3. Unnecessary plugins are excluded.
 4. Only gdb will be used for debugging…
 
+## Quick Install
+```sh
+./script/setup_init_file.sh
+git clone --depth 1 https://github.com/wbthomason/packer.nvim\
+ ~/.local/share/nvim/site/pack/packer/start/packer.nvim
+nvim +PackerInstall
+```
+
 ## Plugins
 
 ### Plugin importer
