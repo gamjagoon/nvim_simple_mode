@@ -6,7 +6,7 @@ return require('packer').startup(function(use)
 	-- colorscheme
 	use 'folke/tokyonight.nvim'
 	use "neovim/nvim-lspconfig"
-	use "simrat39/rust-tools.nvim"
+	use "mrcjkb/rustaceanvim"
 	use "lukas-reineke/indent-blankline.nvim"
 	use "nvim-treesitter/nvim-treesitter"
 	use "lewis6991/gitsigns.nvim"

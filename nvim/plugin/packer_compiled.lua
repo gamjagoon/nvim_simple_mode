@@ -180,10 +180,10 @@ _G.packer_plugins = {
     path = "/Users/mac15/.local/share/nvim/site/pack/packer/start/pseudo-syntax",
     url = "https://github.com/joelbeedle/pseudo-syntax"
   },
-  ["rust-tools.nvim"] = {
+  rustaceanvim = {
     loaded = true,
-    path = "/Users/mac15/.local/share/nvim/site/pack/packer/start/rust-tools.nvim",
-    url = "https://github.com/simrat39/rust-tools.nvim"
+    path = "/Users/mac15/.local/share/nvim/site/pack/packer/start/rustaceanvim",
+    url = "https://github.com/mrcjkb/rustaceanvim"
   },
   ["telescope-fzf-native.nvim"] = {
     loaded = true,
