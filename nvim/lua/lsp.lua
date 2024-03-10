@@ -1,5 +1,6 @@
 local rt = require("rust-tools")
 local lsp_capabilites = require("cmp_nvim_lsp").default_capabilities()
+local lspconfig = require('lspconfig')
 
 vim.api.nvim_create_autocmd('LspAttach', {
   group = vim.api.nvim_create_augroup('UserLspConfig', {}),
@@ -70,6 +71,8 @@ local rt_opts = {
 }
 
 rt.setup(rt_opts)
+lspconfig.pylsp.setup{}
+
 
 -- LSP Diagnostics Options Setup 
 local sign = function(opts)
