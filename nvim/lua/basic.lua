@@ -53,11 +53,9 @@ vmap.set({'n', 'v'}, 'Y', '"+Y', silent_opt)
 vmap.set('n', '<leader>it','<cmd>e ~/.config/nvim/init.lua<cr>',silent_opt)
 
 -- telescope 
-local builtin = require('telescope.builtin')
-vim.keymap.set('n', '<space>ff', builtin.find_files, {})
-vim.keymap.set('n', '<space>fg', builtin.live_grep, {})
-vim.keymap.set('n', '<space>fb', builtin.buffers, {})
-vim.keymap.set('n', '<space>/', builtin.current_buffer_fuzzy_find, {})
+vim.keymap.set('n', '<space>ff', "<cmd>Telescope find_files<cr>", {})
+vim.keymap.set('n', '<space>fg', "<cmd>Telescope live_grep_args theme=ivy <cr>", {})
+vim.keymap.set('n', '<space>/', "<cmd> Telescope current_buffer_fuzzy_find theme=ivy<cr>", {})
 
 local live_grep_args_shortcuts = require("telescope-live-grep-args.shortcuts")
 vim.keymap.set("n", "<space>rg", live_grep_args_shortcuts.grep_word_under_cursor)
@@ -81,3 +79,34 @@ vim.keymap.set('n', '<space>9', '<cmd>BufferLineGoToBuffer 9<cr>', {})
 vim.cmd([[set cursorline]])
 vim.cmd([[set cursorline]])
 vim.cmd([[autocmd FileType c,cpp,sh,bash setlocal noet ci pi sts=0 sw=4 ts=4]])
+
+-- Rust Setup
+local bufnr = vim.api.nvim_get_current_buf()
+vim.keymap.set(
+	"n", 
+	"<space>ca", 
+	function()
+		vim.cmd.RustLsp('codeAction') -- supports rust-analyzer's grouping or vim.lsp.buf.codeAction() if you don't want grouping.
+	end,
+	{ silent = true, buffer = bufnr }
+)
+
+vim.keymap.set( "n", "<space>rl",':RustLsp ' ,{})
+
+vim.keymap.set(
+	"n", 
+	"<space>dr", 
+	function()
+		vim.cmd.RustLsp('renderDiagnotic') -- supports rust-analyzer's grouping or vim.lsp.buf.codeAction() if you don't want grouping.
+	end,
+	{ silent = true }
+)
+
+vim.keymap.set(
+	"n", 
+	"<space>de", 
+	function()
+		vim.cmd.RustLsp('explainError') -- supports rust-analyzer's grouping or vim.lsp.buf.codeAction() if you don't want grouping.
+	end,
+	{ silent = true }
+)
