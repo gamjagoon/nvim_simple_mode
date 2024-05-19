@@ -18,6 +18,7 @@ vim.api.nvim_create_autocmd('LspAttach', {
 })
 
 lspconfig.pylsp.setup{}
+lspconfig.clangd.setup{}
 
 -- LSP Diagnostics Options Setup 
 local sign = function(opts)
