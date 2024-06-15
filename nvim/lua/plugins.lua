@@ -7,6 +7,7 @@ return require('packer').startup(function(use)
 	use 'folke/tokyonight.nvim'
 	use "neovim/nvim-lspconfig"
 	use "mrcjkb/rustaceanvim"
+	use 'rust-lang/rust.vim'
 	use "lukas-reineke/indent-blankline.nvim"
 	use "nvim-treesitter/nvim-treesitter"
 	use "lewis6991/gitsigns.nvim"

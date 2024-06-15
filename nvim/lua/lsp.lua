@@ -20,6 +20,8 @@ vim.api.nvim_create_autocmd('LspAttach', {
 lspconfig.pylsp.setup{}
 lspconfig.clangd.setup{}
 
+vim.g.rustfmt_autosave = 1
+
 -- LSP Diagnostics Options Setup 
 local sign = function(opts)
 vim.fn.sign_define(opts.name, {
