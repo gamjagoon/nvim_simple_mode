@@ -3,6 +3,16 @@ vim.g.loaded_netrw = 1
 vim.g.loaded_netrwPlugin = 1
 vim.opt.termguicolors = true
 
+require("andromeda").setup({
+    preset = "andromeda",
+	colors = {
+    },
+    styles = {
+        italic = true,
+    },
+})
+
+
 require("tokyonight").setup({
   style = "night", -- The theme comes in three styles, `storm`, `moon`, a darker variant `night` and `day`
   light_style = "day", -- The theme is used when the background is set to light
@@ -38,7 +48,7 @@ require("tokyonight").setup({
   end
 })
 
-vim.cmd[[colorscheme tokyonight-night]]
+--vim.cmd[[colorscheme tokyonight-night]]
 
 require('bufferline').setup {
     options = {
@@ -88,3 +98,26 @@ require("nvim-tree").setup({
 })
 
 require("ibl").setup()
+local helpers = require 'incline.helpers'
+local devicons = require 'nvim-web-devicons'
+require('incline').setup {
+  window = {
+    padding = 0,
+    margin = { horizontal = 0 },
+  },
+  render = function(props)
+    local filename = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(props.buf), ':t')
+    if filename == '' then
+      filename = '[No Name]'
+    end
+    local ft_icon, ft_color = devicons.get_icon_color(filename)
+    local modified = vim.bo[props.buf].modified
+    return {
+      ft_icon and { ' ', ft_icon, ' ', guibg = ft_color, guifg = helpers.contrast_color(ft_color) } or '',
+      ' ',
+      { filename, gui = modified and 'bold,italic' or 'bold' },
+      ' ',
+      guibg = '#44406e',
+    }
+  end,
+}

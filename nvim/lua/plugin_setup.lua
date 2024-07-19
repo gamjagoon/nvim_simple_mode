@@ -1,5 +1,6 @@
 local telescope = require("telescope")
 local lga_actions = require("telescope-live-grep-args.actions")
+local actions = require "telescope.actions"
 local cmp = require('cmp')
 local autopair = require('nvim-autopairs')
 
@@ -25,8 +26,10 @@ telescope.setup {
 	defaults = {
 		mappings = {
 			i = {
-				["<C-h>"] = "which_key",
-				["<C-k>"] = lga_actions.quote_prompt(),
+				["<C-o>"] = actions.select_vertical,
+				["<c-k>"] = actions.preview_scrolling_up,
+				["<c-j>"] = actions.preview_scrolling_down,
+				["<C-t>"] = lga_actions.quote_prompt({ postfix = " -t " }),
 			},
 		},
 	},
@@ -37,8 +40,11 @@ telescope.setup {
 			auto_quoting = true, -- enable/disable auto-quoting
 			mappings = { -- extend mappings
 				i = {
-						["<C-k>"] = lga_actions.quote_prompt(),
+						["<C-o>"] = lga_actions.select_vertical,
 						["<C-i>"] = lga_actions.quote_prompt({ postfix = " --iglob " }),
+						["<C-t>"] = lga_actions.quote_prompt({ postfix = " -t " }),
+						["<c-k>"] = lga_actions.preview_scrolling_up,
+						["<c-j>"] = lga_actions.preview_scrolling_down,
 					},
 			},
 		},
@@ -90,11 +96,23 @@ cmp.setup.cmdline({ '/', '?' }, {
 	{name = 'buffer',
 	  option = {
 		get_bufnrs = function()
-		  local bufs = {}
-		  for _, win in ipairs(vim.api.nvim_list_wins()) do
-			bufs[vim.api.nvim_win_get_buf(win)] = true
-		  end
-		  return vim.tbl_keys(bufs)
+			-- All Buffers
+			--return vim.api.nvim_list_bufs()
+
+			-- Performance on large text files
+			local buf = vim.api.nvim_get_current_buf()
+			local byte_size = vim.api.nvim_buf_get_offset(buf, vim.api.nvim_buf_line_count(buf))
+			if byte_size > 1024 * 1024 then -- 1 Megabyte max
+				return {}
+			end
+			return { buf }
+
+			-- -- Visible buffers
+			--local bufs = {}
+			--for _, win in ipairs(vim.api.nvim_list_wins()) do
+			--	bufs[vim.api.nvim_win_get_buf(win)] = true
+			--end
+			--return vim.tbl_keys(bufs)
 		end
 	  }
 	},
@@ -154,9 +172,6 @@ require('gitsigns').setup {
 	relative = 'cursor',
 	row = 0,
 	col = 1
-	},
-	yadm = {
-	enable = false
 	},
 	on_attach = function(bufnr)
 	local function map(mode, lhs, rhs, opts)

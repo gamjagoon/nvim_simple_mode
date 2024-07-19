@@ -2,6 +2,7 @@ local vopt = vim.opt
 local vmap = vim.keymap
 local silent_opt = {noremap=true, silent = true}
 
+require('leap').create_default_mappings()
 
 -- View Setting
 vopt.mouse  = 'a'
@@ -14,7 +15,7 @@ vim.cmd([[set smartindent]])
 vopt.wrap = false
 vopt.tabstop = 4
 vopt.shiftwidth = 4
-vopt.listchars = {space='·', tab = '>-', eol = '$'}
+vopt.listchars = {space='·',tab = '> ', eol = '$'}
 vopt.list = true
 vopt.clipboard = "unnamedplus"
 vopt.tags = "./tags; tags;"
@@ -54,12 +55,16 @@ vmap.set('n', '<leader>it','<cmd>e ~/.config/nvim/init.lua<cr>',silent_opt)
 
 -- telescope 
 vim.keymap.set('n', '<space>ff', "<cmd>Telescope find_files<cr>", {})
+vim.keymap.set('n', '<space>fs', "<cmd>Telescope grep_string<cr>", {})
 vim.keymap.set('n', '<space>fg', "<cmd>Telescope live_grep_args theme=ivy <cr>", {})
 vim.keymap.set('n', '<space>/', "<cmd> Telescope current_buffer_fuzzy_find theme=ivy<cr>", {})
 
-local live_grep_args_shortcuts = require("telescope-live-grep-args.shortcuts")
-vim.keymap.set("n", "<space>rg", live_grep_args_shortcuts.grep_word_under_cursor)
-vim.keymap.set("v", "<space>rg", live_grep_args_shortcuts.grep_visual_selection)
+local function search_word_under_cursor()
+  local word = vim.fn.expand("<cword>")
+  require('telescope').extensions.live_grep_args.live_grep_args({ default_text = word})
+end
+
+vim.keymap.set("n", "<space>rg", search_word_under_cursor, silent_opt)
 
 -- nvim tree
 vim.keymap.set('n', '<space>e', '<cmd>NvimTreeToggle<cr>', {})
@@ -103,8 +108,8 @@ vim.keymap.set(
 )
 
 vim.keymap.set(
-	"n", 
-	"<space>de", 
+	"n",
+	"<space>de",
 	function()
 		vim.cmd.RustLsp('explainError') -- supports rust-analyzer's grouping or vim.lsp.buf.codeAction() if you don't want grouping.
 	end,
