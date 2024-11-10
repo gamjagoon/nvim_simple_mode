@@ -24,35 +24,44 @@ require'nvim-treesitter.configs'.setup {
 
 telescope.setup {
 	defaults = {
+		file_ignore_patterns = {".git/"},
+		vimgrep_arguments = {
+		  'rg',
+		  '--color=never',
+		  '--no-heading',
+		  '--with-filename',
+		  '--line-number',
+		  '--column',
+		  '--smart-case'
+		},
 		mappings = {
 			i = {
 				["<C-o>"] = actions.select_vertical,
 				["<c-k>"] = actions.preview_scrolling_up,
 				["<c-j>"] = actions.preview_scrolling_down,
 				["<C-t>"] = lga_actions.quote_prompt({ postfix = " -t " }),
+				["<C-space>"] = actions.to_fuzzy_refine,
 			},
 		},
-	},
-	pickers = {
 	},
 	extensions = {
-		live_grep_args = {
-			auto_quoting = true, -- enable/disable auto-quoting
-			mappings = { -- extend mappings
-				i = {
-						["<C-o>"] = lga_actions.select_vertical,
-						["<C-i>"] = lga_actions.quote_prompt({ postfix = " --iglob " }),
-						["<C-t>"] = lga_actions.quote_prompt({ postfix = " -t " }),
-						["<c-k>"] = lga_actions.preview_scrolling_up,
-						["<c-j>"] = lga_actions.preview_scrolling_down,
-					},
-			},
-		},
+		 live_grep_args = {
+		 	auto_quoting = true, -- enable/disable auto-quoting
+		 	mappings = { -- extend mappings
+		 		i = {
+		 				["<C-o>"] = lga_actions.select_vertical,
+		 				["<C-i>"] = lga_actions.quote_prompt({ postfix = " --iglob " }),
+		 				["<C-t>"] = lga_actions.quote_prompt({ postfix = " -t " }),
+		 				["<c-k>"] = lga_actions.preview_scrolling_up,
+		 				["<c-j>"] = lga_actions.preview_scrolling_down,
+		 			},
+		 	},
+		 },
 		fzf = {
 			fuzzy = true,					-- false will only do exact matching
 			override_generic_sorter = true,  -- override the generic sorter
 			override_file_sorter = true,	 -- override the file sorter
-			case_mode = "respect_case",		-- or "ignore_case" or "respect_case"
+			case_mode = "smart_case",		-- or "ignore_case" or "respect_case"
 									   --	   the default case_mode is "smart_case"
 		},
 	}
@@ -66,7 +75,8 @@ require('nvim-treesitter.parsers').get_parser_configs().asm = {
 	},
 }
 
-require('telescope').load_extension('fzf')
+telescope.load_extension('fzf')
+telescope.load_extension("live_grep_args")
 
 cmp.setup({
 	snippet = {

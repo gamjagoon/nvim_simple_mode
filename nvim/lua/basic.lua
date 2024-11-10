@@ -54,15 +54,20 @@ vmap.set({'n', 'v'}, 'Y', '"+Y', silent_opt)
 vmap.set('n', '<leader>it','<cmd>e ~/.config/nvim/init.lua<cr>',silent_opt)
 
 -- telescope 
-vim.keymap.set('n', '<space>ff', "<cmd>Telescope find_files<cr>", {})
-vim.keymap.set('n', '<space>fs', "<cmd>Telescope grep_string<cr>", {})
-vim.keymap.set('n', '<space>fg', "<cmd>Telescope live_grep_args theme=ivy <cr>", {})
-vim.keymap.set('n', '<space>/', "<cmd> Telescope current_buffer_fuzzy_find theme=ivy<cr>", {})
+local function my_live_grep()
+	require'telescope.builtin'.grep_string{ shorten_path = true, word_match = "-w", only_sort_text = true, search = '' }
+end
 
 local function search_word_under_cursor()
   local word = vim.fn.expand("<cword>")
-  require('telescope').extensions.live_grep_args.live_grep_args({ default_text = word})
+  require('telescope').extensions.live_grep_args.live_grep_args({ default_text = word, shorten_path = true, word_match = "-w", only_sort_text = true, search = ''})
 end
+
+vim.keymap.set('n', '<space>ff', "<cmd>Telescope find_files<cr>", {})
+vim.keymap.set('n', '<space>fs', "<cmd>Telescope grep_string<cr>", {})
+vim.keymap.set('n', '<space>fg', my_live_grep, silent_opt)
+vim.keymap.set('n', '<space>/', "<cmd> Telescope current_buffer_fuzzy_find theme=ivy<cr>", {})
+
 
 vim.keymap.set("n", "<space>rg", search_word_under_cursor, silent_opt)
 
@@ -92,6 +97,33 @@ vim.keymap.set(
 	"<space>ca", 
 	function()
 		vim.cmd.RustLsp('codeAction') -- supports rust-analyzer's grouping or vim.lsp.buf.codeAction() if you don't want grouping.
+	end,
+	{ silent = true, buffer = bufnr }
+)
+
+vim.keymap.set(
+	"n", 
+	"<space>cd", 
+	function()
+		vim.cmd.RustLsp('renderDiagnostic') -- supports rust-analyzer's grouping or vim.lsp.buf.codeAction() if you don't want grouping.
+	end,
+	{ silent = true, buffer = bufnr }
+)
+
+vim.keymap.set(
+	"n", 
+	"<space>ce", 
+	function()
+		vim.cmd.RustLsp('explainError') -- supports rust-analyzer's grouping or vim.lsp.buf.codeAction() if you don't want grouping.
+	end,
+	{ silent = true, buffer = bufnr }
+)
+
+vim.keymap.set(
+	"n", 
+	"K", 
+	function()
+		vim.cmd.RustLsp({'hover', 'actions'}) -- supports rust-analyzer's grouping or vim.lsp.buf.codeAction() if you don't want grouping.
 	end,
 	{ silent = true, buffer = bufnr }
 )
