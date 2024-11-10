@@ -51,6 +51,33 @@ lspconfig.lua_ls.setup {
   }
 }
 
+vim.g.rustaceanvim = {
+  -- Plugin configuration
+  tools = {
+		hover_actions = {
+			replace_builtin_hover = true,
+		},
+		float_win_config = {
+			border = "none",
+			auto_focus = true,
+		},
+  },
+  -- LSP configuration
+  server = {
+    on_attach = function(client, bufnr)
+	  vim.lsp.inlay_hint.enable(true)
+    end,
+    default_settings = {
+      -- rust-analyzer language server configuration
+      ['rust-analyzer'] = {
+      },
+    },
+  },
+  -- DAP configuration
+  dap = {
+  },
+}
+
 vim.g.rustfmt_autosave = 1
 
 -- LSP Diagnostics Options Setup 

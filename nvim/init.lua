@@ -1,5 +1,6 @@
-require('plugins') 		-- lua/plugins
-require('plugin_setup') -- lua/plugin_setup
-require('lsp')	 		-- lua/lsp
-require('ui')	  		-- lua/ui
-require('basic')   		-- lua/basic
+require('plugins') 		-- lua/plugins.lua
+require('plugin_setup') -- lua/plugin_setup.lua
+require('snippets')     -- lua/snippets.lua
+require('lsp')	 		-- lua/lsp.lua
+require('ui')	  		-- lua/ui.lua
+require('basic')   		-- lua/basic.lua
