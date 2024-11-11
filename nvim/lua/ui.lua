@@ -3,20 +3,20 @@ vim.g.loaded_netrw = 1
 vim.g.loaded_netrwPlugin = 1
 vim.opt.termguicolors = true
 
-require("andromeda").setup({
-    preset = "andromeda",
-	colors = {
-    },
-    styles = {
-        italic = true,
-    },
-})
+--require("andromeda").setup({
+--    preset = "andromeda",
+--	colors = {
+--    },
+--    styles = {
+--        italic = true,
+--    },
+--})
 
 
 require("tokyonight").setup({
-  style = "night", -- The theme comes in three styles, `storm`, `moon`, a darker variant `night` and `day`
+  style = "storm", -- The theme comes in three styles, `storm`, `moon`, a darker variant `night` and `day`
   light_style = "day", -- The theme is used when the background is set to light
-  transparent = false, -- Enable this to disable setting the background color
+  transparent = true, -- Enable this to disable setting the background color
   terminal_colors = true, -- Configure the colors used when opening a `:terminal` in [Neovim](https://github.com/neovim/neovim)
   styles = {
     comments = { italic = true },
@@ -28,7 +28,7 @@ require("tokyonight").setup({
   },
   sidebars = { "qf", "help" }, -- Set a darker background on sidebar-like windows. For example: `["qf", "vista_kind", "terminal", "packer"]`
   day_brightness = 0.5, -- Adjusts the brightness of the colors of the **Day** style. Number between 0 and 1, from dull to vibrant colors
-  hide_inactive_statusline = false, -- Enabling this option, will hide inactive statuslines and replace them with a thin border instead. Should work with the standard **StatusLine** and **LuaLine**.
+  hide_inactive_statusline = true, -- Enabling this option, will hide inactive statuslines and replace them with a thin border instead. Should work with the standard **StatusLine** and **LuaLine**.
   dim_inactive = false, -- dims inactive windows
   on_highlights = function (hl, c)
       hl.StatusLine = {
@@ -48,7 +48,7 @@ require("tokyonight").setup({
   end
 })
 
---vim.cmd[[colorscheme tokyonight-night]]
+vim.cmd[[colorscheme tokyonight-storm]]
 
 require('bufferline').setup {
     options = {
@@ -61,7 +61,7 @@ require('bufferline').setup {
         max_name_length = 18,
         max_prefix_length = 15, -- prefix used when a buffer is de-duplicated
         truncate_names = true, -- whether or not tab names should be truncated
-        tab_size = 13,
+        tab_size = 15,
         diagnostics = "nvim_lsp",
         color_icons = true,
         hover = {

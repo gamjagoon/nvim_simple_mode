@@ -2,22 +2,30 @@ local vopt = vim.opt
 local vmap = vim.keymap
 local silent_opt = {noremap=true, silent = true}
 
-require('leap').create_default_mappings()
+local leap = require('leap')
+leap.create_default_mappings()
+leap.opts.case_sensitive = true
+leap.opts.equivalence_classes = { ' \t\r\n', '([{', ')]}', '\'"`' }
+
+-- invoking Leap.
+require('leap.user').set_repeat_keys('<enter>', '<backspace>')
+
 
 -- View Setting
 vopt.mouse  = 'a'
 vopt.nu = true
 vopt.rnu = true
 vopt.ignorecase = true
-vopt.smartcase  = true
+vopt.cindent = true
+vopt.smartcase = false 
 vopt.hlsearch = true
-vim.cmd([[set smartindent]])
 vopt.wrap = false
 vopt.tabstop = 4
 vopt.shiftwidth = 4
-vopt.listchars = {space='·',tab = '> ', eol = '$'}
+vopt.sts = 4
+vopt.listchars = {space=' ',tab = '>-', eol = '$'}
 vopt.list = true
-vopt.clipboard = "unnamedplus"
+vim.api.nvim_set_option("clipboard", "unnamed")
 vopt.tags = "./tags; tags;"
 vim.api.nvim_create_autocmd( 
 	{
@@ -29,6 +37,15 @@ vim.api.nvim_create_autocmd(
 	}
 )
 
+vim.api.nvim_create_autocmd( 
+	{
+		"BufEnter",
+	},
+	{
+		pattern = "*.c,*.h,*.cpp",
+		command = "set ts=8 shiftwidth=8 sts=8"
+	}
+)
 
 -- Key Binding
 vmap.set('n', 'cb', '<cmd>bn<bar>bd#<cr><cmd>bp<cr>', silent_opt)
@@ -37,7 +54,6 @@ vmap.set('n', '<c-h>','<c-w>h',silent_opt)
 vmap.set('n', '<c-j>','<c-w>j',silent_opt)
 vmap.set('n', '<c-k>','<c-w>k',silent_opt)
 vmap.set('n', '<c-l>','<c-w>l',silent_opt)
-vmap.set('n', 'sp','<cmd>split<cr>',silent_opt)
 vmap.set('n', 'vs','<cmd>vsplit<cr>',silent_opt)
 
 vmap.set('n', '<s-h>','<cmd>bp<cr>',silent_opt)

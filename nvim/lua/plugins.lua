@@ -49,6 +49,7 @@ return require('packer').startup(function(use)
 		end
 	}
 	use "RaafatTurki/hex.nvim"
+	use "tpope/vim-repeat"
 	use {
 		"ggandor/leap.nvim",
 		require = {
