@@ -1,17 +1,11 @@
-vim.opt.background="dark"
+--vim.opt.background="dark"
 vim.g.loaded_netrw = 1
 vim.g.loaded_netrwPlugin = 1
 vim.opt.termguicolors = true
 
---require("andromeda").setup({
---    preset = "andromeda",
---	colors = {
---    },
---    styles = {
---        italic = true,
---    },
---})
-
+-- ==============================================
+-- SET COLORSCHEME
+-- ==============================================
 
 require("tokyonight").setup({
   style = "storm", -- The theme comes in three styles, `storm`, `moon`, a darker variant `night` and `day`
@@ -47,8 +41,55 @@ require("tokyonight").setup({
       }
   end
 })
+--require("tokyonight").load()
 
-vim.cmd[[colorscheme tokyonight-storm]]
+require("evergarden").setup {
+  theme = {
+    variant = 'winter', -- 'winter'|'fall'|'spring'|'summer'
+    accent = 'green',
+  },
+  editor = {
+    transparent_background = false,
+    override_terminal = true,
+    sign = { color = 'none' },
+    float = {
+      color = 'mantle',
+      invert_border = false,
+    },
+    completion = {
+      color = 'surface0',
+    },
+  },
+  style = {
+    tabline = { 'reverse' },
+    search = { 'italic', 'reverse' },
+    incsearch = { 'italic', 'reverse' },
+    types = { 'italic' },
+    keyword = { 'italic' },
+    comment = { 'italic' },
+  },
+  overrides = {},
+  color_overrides = {},
+  integrations = {
+    --blink_cmp = true,
+    cmp = true,
+    --fzf_lua = true,
+    gitsigns = true,
+    indent_blankline = { enable = true, scope_color = 'red' },
+    nvimtree = true,
+    --rainbow_delimiters = true,
+    --symbols_outline = true,
+    telescope = true,
+    --which_key = true,
+    --neotree = true,
+  },
+}
+require("evergarden").load()
+
+
+-- ==============================================
+-- SET OTHER UI
+-- ==============================================
 
 require('bufferline').setup {
     options = {
@@ -121,3 +162,4 @@ require('incline').setup {
     }
   end,
 }
+

@@ -5,11 +5,8 @@ return require('packer').startup(function(use)
 	use "wbthomason/packer.nvim"
 
 	-- UI/colorscheme
-	use 'folke/tokyonight.nvim'
-	use {
-		"nobbmaestro/nvim-andromeda",
-		requires = { "tjdevries/colorbuddy.nvim", branch = "dev" }
-	}
+	use "folke/tokyonight.nvim"
+	use {"everviolet/nvim", as = "evergarden" }
 	use "lukas-reineke/indent-blankline.nvim"
 	use {'akinsho/bufferline.nvim', 
 			tag = "*", 
