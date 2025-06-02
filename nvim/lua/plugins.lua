@@ -1,69 +1,99 @@
-vim.cmd [[packadd packer.nvim]]
+-- Bootstrap lazy.nvim
+local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
+if not (vim.uv or vim.loop).fs_stat(lazypath) then
+  local lazyrepo = "https://github.com/folke/lazy.nvim.git"
+  local out = vim.fn.system({ "git", "clone", "--filter=blob:none", "--branch=stable", lazyrepo, lazypath })
+  if vim.v.shell_error ~= 0 then
+    vim.api.nvim_echo({
+      { "Failed to clone lazy.nvim:\n", "ErrorMsg" },
+      { out, "WarningMsg" },
+      { "\nPress any key to exit..." },
+    }, true, {})
+    vim.fn.getchar()
+    os.exit(1)
+  end
+end
+vim.opt.rtp:prepend(lazypath)
 
-return require('packer').startup(function(use)
+-- Make sure to setup `mapleader` and `maplocalleader` before
+-- loading lazy.nvim so that mappings are correct.
+-- This is also a good place to setup other settings (vim.opt)
+vim.g.mapleader = " "
+vim.g.maplocalleader = "\\"
+
+
+return require("lazy").setup({
 	-- Packer can manage itself
-	use "wbthomason/packer.nvim"
+	"wbthomason/packer.nvim",
 
 	-- UI/colorscheme
-	use "folke/tokyonight.nvim"
-	use {"everviolet/nvim", as = "evergarden" }
-	use "lukas-reineke/indent-blankline.nvim"
-	use {'akinsho/bufferline.nvim', 
-			tag = "*", 
-			requires = 'nvim-tree/nvim-web-devicons'
-	}
-	use "b0o/incline.nvim"
+	"folke/tokyonight.nvim",
+	{
+		"everviolet/nvim",
+		as = "evergarden"
+	},
+	"lukas-reineke/indent-blankline.nvim",
+	{
+		"akinsho/bufferline.nvim", 
+		version= "*", 
+		dependencies = "nvim-tree/nvim-web-devicons"
+	},
+	"b0o/incline.nvim",
 
 	-- lsp
-	use "neovim/nvim-lspconfig"
-	use "mrcjkb/rustaceanvim"
-	use 'rust-lang/rust.vim'
-	use "nvim-treesitter/nvim-treesitter"
+	"neovim/nvim-lspconfig",
+	{ 
+		"mrcjkb/rustaceanvim",
+		version = "v5.26.0",
+	},
+	"rust-lang/rust.vim",
+	"nvim-treesitter/nvim-treesitter",
 
 	-- util
-	use "lewis6991/gitsigns.nvim"
-	use {
-		'nvim-telescope/telescope.nvim',
-		requires = {
+	"lewis6991/gitsigns.nvim",
+	{
+		"nvim-telescope/telescope.nvim",
+		dependencies = {
 			{
 				"nvim-lua/plenary.nvim",
 				"nvim-telescope/telescope-live-grep-args.nvim",
 			},
 		},
-	}
-	use {'nvim-telescope/telescope-fzf-native.nvim', run = 'make' }
-	use{"nvim-lua/popup.nvim"}
-	use {
-		"windwp/nvim-autopairs",
-	}
-	use {
-		'nvim-tree/nvim-tree.lua',
-		requires = {
-			'nvim-tree/nvim-web-devicons', -- optional
+	},
+	{
+		"nvim-telescope/telescope-fzf-native.nvim",
+		build = "make"
+	},
+	"nvim-lua/popup.nvim",
+	"windwp/nvim-autopairs",
+	{
+		"nvim-tree/nvim-tree.lua",
+		dependencies = {
+			"nvim-tree/nvim-web-devicons", -- optional
 		},
 		config = function()
 			require("nvim-tree").setup {}
 		end
-	}
-	use "RaafatTurki/hex.nvim"
-	use "tpope/vim-repeat"
-	use {
+	},
+	"RaafatTurki/hex.nvim",
+	"tpope/vim-repeat",
+	{
 		"ggandor/leap.nvim",
 		require = {
 			{
 				"tpope/vim-repeat"
 			},
 		},
-	}
+	},
 
 	-- auto complete
-	use "hrsh7th/cmp-buffer"
-	use "hrsh7th/cmp-nvim-lsp"
-	use "hrsh7th/cmp-path"
-	use "hrsh7th/cmp-cmdline"
-	use "hrsh7th/cmp-calc"
-	use "hrsh7th/nvim-cmp"
-	use "L3MON4D3/LuaSnip"
-	use "saadparwaiz1/cmp_luasnip"
-	use "joelbeedle/pseudo-syntax"
-end)
+	"hrsh7th/cmp-buffer",
+	"hrsh7th/cmp-nvim-lsp",
+	"hrsh7th/cmp-path",
+	"hrsh7th/cmp-cmdline",
+	"hrsh7th/cmp-calc",
+	"hrsh7th/nvim-cmp",
+	"L3MON4D3/LuaSnip",
+	"saadparwaiz1/cmp_luasnip",
+	"joelbeedle/pseudo-syntax",
+})
