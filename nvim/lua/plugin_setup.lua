@@ -67,6 +67,9 @@ telescope.setup {
 	}
 }
 
+telescope.load_extension('fzf')
+telescope.load_extension("live_grep_args")
+
 require('nvim-treesitter.parsers').get_parser_configs().asm = {
 	install_info = {
 		url = 'https://github.com/rush-rs/tree-sitter-asm.git',
@@ -74,9 +77,6 @@ require('nvim-treesitter.parsers').get_parser_configs().asm = {
 		branch = 'main',
 	},
 }
-
-telescope.load_extension('fzf')
-telescope.load_extension("live_grep_args")
 
 cmp.setup({
 	snippet = {

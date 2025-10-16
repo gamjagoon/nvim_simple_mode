@@ -114,6 +114,13 @@ require('bufferline').setup {
     }
 }
 
+-- disable netrw at the very start of your init.lua
+vim.g.loaded_netrw = 1
+vim.g.loaded_netrwPlugin = 1
+
+-- optionally enable 24-bit colour
+vim.opt.termguicolors = true
+
 require("nvim-tree").setup({
   sort_by = "case_sensitive",
   view = {
@@ -123,10 +130,10 @@ require("nvim-tree").setup({
 		open_win_config = {
 			relative = "editor",
 			border = "rounded",
-			width = 50,
+			width = 100,
 			height = 50,
-			row = 1,
-			col = 1,
+			row = (vim.o.lines - 50) * 0.5,
+			col = (vim.o.columns - 100) * 0.5,
 		},
 	},
   },

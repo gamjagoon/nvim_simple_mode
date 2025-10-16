@@ -69,11 +69,9 @@ vmap.set({'n', 'v'}, 'Y', '"+Y', silent_opt)
 -- init lua
 vmap.set('n', '<leader>it','<cmd>e ~/.config/nvim/init.lua<cr>',silent_opt)
 
--- telescope 
-local function my_live_grep()
-	require'telescope.builtin'.grep_string{ shorten_path = true, word_match = "-w", only_sort_text = true, search = '' }
-end
+require('fzf-lua').setup({'fzf-vim'})
 
+-- telescope 
 local function search_word_under_cursor()
   local word = vim.fn.expand("<cword>")
   require('telescope').extensions.live_grep_args.live_grep_args({ default_text = word, shorten_path = true, word_match = "-w", only_sort_text = true, search = ''})
@@ -81,7 +79,7 @@ end
 
 vim.keymap.set('n', '<space>ff', "<cmd>Telescope find_files<cr>", {})
 vim.keymap.set('n', '<space>fs', "<cmd>Telescope grep_string<cr>", {})
-vim.keymap.set('n', '<space>fg', my_live_grep, silent_opt)
+vim.keymap.set('n', '<space>fg', "<cmd>FzfLua live_grep_native multiprocess=true<cr>", silent_opt)
 vim.keymap.set('n', '<space>/', "<cmd> Telescope current_buffer_fuzzy_find theme=ivy<cr>", {})
 
 
@@ -102,7 +100,6 @@ vim.keymap.set('n', '<space>8', '<cmd>BufferLineGoToBuffer 8<cr>', {})
 vim.keymap.set('n', '<space>9', '<cmd>BufferLineGoToBuffer 9<cr>', {})
 
 -- highlight
-vim.cmd([[set cursorline]])
 vim.cmd([[set cursorline]])
 vim.cmd([[autocmd FileType c,cpp,sh,bash setlocal noet ci pi sts=0 sw=4 ts=4]])
 

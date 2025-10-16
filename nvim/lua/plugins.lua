@@ -75,6 +75,14 @@ return require("lazy").setup({
 			require("nvim-tree").setup {}
 		end
 	},
+	{
+		"ibhagwan/fzf-lua",
+		-- optional for icon support
+		dependencies = { "nvim-tree/nvim-web-devicons" },
+		-- or if using mini.icons/mini.nvim
+		-- dependencies = { "nvim-mini/mini.icons" },
+		opts = {}
+	},
 	"RaafatTurki/hex.nvim",
 	"tpope/vim-repeat",
 	{
