@@ -44,7 +44,6 @@ return require("lazy").setup({
 	"neovim/nvim-lspconfig",
 	{ 
 		"mrcjkb/rustaceanvim",
-		version = "v5.26.0",
 	},
 	"rust-lang/rust.vim",
 	"nvim-treesitter/nvim-treesitter",

@@ -143,6 +143,11 @@ require("nvim-tree").setup({
   filters = {
     dotfiles = true,
   },
+  git = {
+    enable = false, -- Enable Git integration in nvim-tree
+    ignore = false, -- Don't ignore Git ignored files
+    timeout = 500, -- Timeout for Git commands
+  },
 })
 
 require("ibl").setup()

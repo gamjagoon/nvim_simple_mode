@@ -3,7 +3,8 @@ local vmap = vim.keymap
 local silent_opt = {noremap=true, silent = true}
 
 local leap = require('leap')
-leap.create_default_mappings()
+vim.keymap.set({'n', 'x', 'o'}, '<space>s', '<Plug>(leap)')
+vim.keymap.set('n',             '<space>S', '<Plug>(leap-from-window)')
 leap.opts.case_sensitive = true
 leap.opts.equivalence_classes = { ' \t\r\n', '([{', ')]}', '\'"`' }
 
