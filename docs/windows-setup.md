@@ -1,4 +1,6 @@
-# Windows 수동 도구 설치
+# earlgrey.nvim · Windows 수동 도구 설치
+
+[← earlgrey.nvim README](../README.md#windows-downloads)
 
 Windows 10/11 x64, PowerShell 5.1 이상을 대상으로 합니다. WSL에서는 Linux 설치기를 사용하세요.
 아래 공식 페이지에서 **최신 안정 릴리스**를 직접 설치한 뒤, Neovim 설정 설치기를 실행합니다.

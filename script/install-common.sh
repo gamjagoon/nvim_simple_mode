@@ -202,18 +202,18 @@ install_language_tools() {
 
 install_persist_path() {
     if "$INSTALL_DRY_RUN"; then
-        printf '%s\n' 'Add an idempotent nvim-simple-mode PATH snippet to ~/.profile, ~/.bashrc, ~/.zprofile, ~/.zshrc (and existing ~/.bash_profile).'
+        printf '%s\n' 'Add an idempotent earlgrey.nvim PATH snippet to ~/.profile, ~/.bashrc, ~/.zprofile, ~/.zshrc (and existing ~/.bash_profile).'
         return
     fi
-    local dir="${XDG_CONFIG_HOME:-$HOME/.config}/nvim-simple-mode" profile line
+    local dir="${XDG_CONFIG_HOME:-$HOME/.config}/earlgrey.nvim" profile line
     mkdir -p "$dir"
     cat > "$dir/env.sh" <<'ENV'
-# Installed by nvim_simple_mode; user-local Neovim, search tools, npm and Rust.
+# Installed by earlgrey.nvim; user-local Neovim, search tools, npm and Rust.
 export PATH="$HOME/.local/bin:${CARGO_HOME:-$HOME/.cargo}/bin:/opt/homebrew/bin:/usr/local/bin:$PATH"
 ENV
     # Evaluate HOME/XDG_CONFIG_HOME when the shell starts, not during installation.
     # shellcheck disable=SC2016
-    line='[ ! -f "${XDG_CONFIG_HOME:-$HOME/.config}/nvim-simple-mode/env.sh" ] || . "${XDG_CONFIG_HOME:-$HOME/.config}/nvim-simple-mode/env.sh"'
+    line='[ ! -f "${XDG_CONFIG_HOME:-$HOME/.config}/earlgrey.nvim/env.sh" ] || . "${XDG_CONFIG_HOME:-$HOME/.config}/earlgrey.nvim/env.sh"'
     for profile in "$HOME/.profile" "$HOME/.bashrc" "$HOME/.zprofile" "$HOME/.zshrc"; do
         if ! grep -Fqx "$line" "$profile" 2>/dev/null; then printf '\n%s\n' "$line" >> "$profile"; fi
     done

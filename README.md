@@ -1,13 +1,42 @@
-# neovim simple mode
+<div align="center">
 
-[한국어](#korean) | [English](#english) | [日本語](#japanese) | [Windows 다운로드 / Downloads](#windows-downloads)
+# earlgrey.nvim
+
+**얼그레이 네오빔 · A warm cup. A focused editor.**
+
+<img src="docs/assets/earlgrey-tea.png" alt="A steaming cup of amber Earl Grey tea with bergamot and tea leaves on a forest-green background" width="960">
+
+차 한 잔의 여유로, 코드에 몰입하는 Neovim.
+
+![Neovim 0.12+](https://img.shields.io/badge/Neovim-0.12%2B-536B4F?style=flat-square&logo=neovim&logoColor=white)
+![Configured in Lua](https://img.shields.io/badge/Config-Lua-BB8749?style=flat-square&logo=lua&logoColor=white)
+![Linux, macOS and Windows](https://img.shields.io/badge/Linux_%C2%B7_macOS_%C2%B7_Windows-3E5146?style=flat-square)
+
+[한국어](#korean) · [English](#english) · [日本語](#japanese) · [Windows 다운로드 / Downloads](#windows-downloads)
+
+</div>
+
+---
 
 <a id="korean"></a>
 
 ## 한국어
 
-Space 기반 단축키, tmux 방식의 창 이동, Rust 개발 도구를 갖춘 개인용 Neovim
-설정입니다. 플러그인은 [lazy.nvim](https://lazy.folke.io/)으로 관리합니다.
+> 홍차처럼 차분하게, 손에 익은 도구로 편안하게.
+
+**earlgrey.nvim**은 Space 기반 단축키, tmux 방식의 창 이동, Rust 개발 도구를
+갖춘 개인용 Neovim 설정입니다. 플러그인은 [lazy.nvim](https://lazy.folke.io/)으로 관리합니다.
+
+| 한 모금씩 살펴보기 | 구성 |
+| --- | --- |
+| 편안한 작업 공간 | Evergarden 테마, 상태줄, 버퍼 탭, 파일 트리 |
+| 손에 익는 이동 | Space 단축키, `Ctrl-h/j/k/l` 창 이동, 번호로 버퍼 선택 |
+| 빠른 파일·내용 검색 | FzfLua + `fd` + `ripgrep` |
+| 자연스러운 완성 | Blink 자동 완성 + LuaSnip 스니펫 |
+| Rust·Python 개발 | rustaceanvim, rust-analyzer, Pyright |
+| 읽기 좋은 Markdown | 제목·목록·표·코드 블록 렌더링 |
+
+[설치](#설치) · [단축키](#단축키) · [검증](#검증)
 
 ### 요구 사항
 
@@ -204,9 +233,17 @@ Neovim 검사는 플러그인 구성, 완성 기능 협상, 여러 버퍼에서�
 
 ## English
 
-A personal Neovim configuration with Space-based shortcuts, tmux-style window
-navigation, and Rust tooling. Plugins are managed by
+> Settle in with a cup of tea and tools that feel familiar.
+
+**earlgrey.nvim** is a personal Neovim configuration with Space-based shortcuts,
+tmux-style window navigation, and Rust tooling. Plugins are managed by
 [lazy.nvim](https://lazy.folke.io/).
+
+Evergarden colors, FzfLua search, Blink completion, LuaSnip snippets, and rendered
+Markdown bring the workspace together. Rust uses rustaceanvim and rust-analyzer;
+Python uses Pyright.
+
+[Installation](#install) · [Key bindings](#shortcuts) · [Verification](#checks)
 
 ### Requirements
 
@@ -407,8 +444,14 @@ rendering, and the statusline.
 
 ## 日本語
 
-Space キーを使ったショートカット、tmux 風のウィンドウ移動、Rust 向けの開発環境を備えた個人用 Neovim 設定です。
+> 紅茶を片手に、使い慣れた道具で落ち着いてコードを書く。
+
+**earlgrey.nvim** は、Space キーを使ったショートカット、tmux 風のウィンドウ移動、Rust 向けの開発環境を備えた個人用 Neovim 設定です。
 プラグインは [lazy.nvim](https://lazy.folke.io/) で管理します。
+
+Evergarden テーマ、FzfLua による検索、Blink の補完、LuaSnip のスニペット、
+Markdown のレンダリングを組み合わせています。Rust には rustaceanvim と rust-analyzer、
+Python には Pyright を使用します。
 
 ### 必要なもの
 
