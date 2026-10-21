@@ -1,6 +1,6 @@
 # neovim simple mode
 
-[한국어](#korean) | [English](#english) | [日本語](#japanese)
+[한국어](#korean) | [English](#english) | [日本語](#japanese) | [Windows 다운로드 / Downloads](#windows-downloads)
 
 <a id="korean"></a>
 
@@ -25,34 +25,65 @@ Space 기반 단축키, tmux 방식의 창 이동, Rust 개발 도구를 갖춘 
 - `+` 레지스터 복사·붙여넣기용 시스템 클립보드 제공자와 아이콘 표시용 Nerd
   Font가 필요합니다.
 
-언어 서버와 외부 도구는 별도로 설치합니다. 이 설정에서는 C/C++ 및 Lua 언어
-서버를 활성화하지 않습니다.
+Linux/macOS 설치기는 언어 서버와 외부 도구를 함께 설치합니다. Windows는
+[공식 링크 안내](docs/windows-setup.md)를 따라 직접 설치합니다. 이 설정에서는 C/C++ 및
+Lua 언어 서버를 활성화하지 않습니다.
 
 ### 설치
 
-저장소 루트에서 실행합니다.
+저장소를 받은 뒤 운영체제에 맞는 명령을 실행합니다.
+
+- Linux: Ubuntu 24.04+/Debian 12+, 현재 Fedora/Arch, x86_64 또는 arm64.
+  배포판 패키지 설치에는 `sudo` 권한이 필요합니다.
+- macOS: Apple Silicon 또는 기존 Homebrew가 있는 Intel Mac. Command Line Tools
+  설치 창이 열리면 설치를 완료한 뒤 다시 실행하세요. 새 Homebrew 자동 설치는
+  Apple Silicon을 지원합니다.
+- Windows: Windows 10/11 x64, PowerShell 5.1+. 먼저
+  [아래 공식 다운로드 링크](#windows-downloads)에서 도구를 설치하세요.
+  PATH 설정과 설치 항목은 [Windows 수동 설치 안내](docs/windows-setup.md)를 참고하세요.
+
+필수 도구는 Git, curl, C 도구 모음, Neovim 0.12+, native tree-sitter CLI 0.26.1+,
+fd, rg, fzf 0.36+, Node/npm, Pyright, Rust 및 rust-analyzer/rustfmt입니다.
+Linux는 X11/Wayland 클립보드 도구도 설치합니다. Unix의 사용자 도구 PATH는
+쉘 초기화 파일에서 불러옵니다. Windows에서는 도구 설치 시 PATH를 직접 등록하고
+새 터미널을 여세요. `check-tools-windows.ps1`로 실행 중인 도구와 공식 링크를
+확인할 수 있습니다. 시스템 PATH의 오래된 도구가 먼저 실행된다면 해당 설치를 갱신하세요.
 
 ```sh
-bash script/setup_init_file.sh
-nvim --headless '+Lazy! restore' +qa
-nvim
+# Linux
+bash script/install-linux.sh
+# macOS
+bash script/install-macos.sh
 ```
 
-설치 스크립트의 전체 경로를 지정하면 다른 디렉터리에서도 실행할 수 있습니다.
-저장소의 `nvim/`을 `${XDG_CONFIG_HOME:-$HOME/.config}/nvim`에 심볼릭 링크로
-연결하므로 설치 후에도 저장소 위치를 유지하세요. lazy.nvim은 자동으로 설치되며,
-`Lazy restore`는 `nvim/lazy-lock.json`에 기록된 버전으로 플러그인을 설치합니다.
+```powershell
+# Windows PowerShell: install tools from official links first, then check and set up
+powershell -NoProfile -ExecutionPolicy Bypass -File .\script\check-tools-windows.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\script\install-windows.ps1
+```
 
-기존 설정 디렉터리·파일·심볼릭 링크는 연결 전에 같은 상위 디렉터리의
-`nvim.backup.YYYYmmdd-HHMMSS.PID` 경로로 옮겨 보존합니다.
-`${XDG_DATA_HOME:-$HOME/.local/share}/nvim`에 과거 `site/pack/packer` 패키지가
-있으면 데이터도 백업합니다. 그 외의 기존 Lazy 데이터는 유지합니다. 백업 경로는
-출력되며, 다시 실행해도 이미 올바르게 연결된 링크는 유지합니다.
+Linux/macOS는 도구 설치 → 설정 백업/연결 → 플러그인 복원 → 파서 설치 →
+시작·검색 검사를 수행합니다. Windows는 도구 점검 후 설정 백업/복사부터 수행합니다.
+Windows 점검만 실행하려면 `check-tools-windows.ps1`을 사용하세요.
+도구만 설치하려면 `install-tools-linux.sh`, `install-tools-macos.sh`를 사용합니다.
+Unix에서 도구 설치를 생략하려면 `--skip-tools`를 지정합니다.
+Neovim·tree-sitter는 실행 시 공식 최신 안정 릴리스를 조회하며, 설치된 버전이
+이보다 오래되면 갱신합니다. 다른 도구는 패키지 관리자가 제공하는 최신 버전을 사용합니다.
+최소 버전 검사는 유지하고 플러그인은 기존 lockfile로 복원합니다.
+실제 변경 없이 명령을 확인하려면 Unix는 `--dry-run`, Windows는 `-WhatIf`를 사용합니다.
 
-이전 설정을 복구하려면 Neovim을 닫고 `unlink`로 새 설정 심볼릭 링크를 제거한
-뒤, 출력된 설정 백업을 원래 경로로 옮기세요. 데이터 백업은 새로 생성된 데이터
-디렉터리를 다른 위치로 옮긴 뒤 별도로 복구할 수 있습니다. 백업은 자동 삭제하지
-않습니다.
+Linux/macOS는 저장소의 `nvim/`을 `${XDG_CONFIG_HOME:-$HOME/.config}/nvim`에
+연결합니다. Windows는 관리자 권한이 필요한 심볼릭 링크 대신
+`%LOCALAPPDATA%/nvim`에 복사합니다. `XDG_CONFIG_HOME`을 지정하면 해당 경로를
+사용합니다. Unix에서는 저장소를 옮기지 마세요. Windows에서 저장소 설정을
+변경한 뒤에는 설치기를 다시 실행해 복사본을 갱신하세요.
+기본 앱 이름인 `nvim`을 사용하며, 설치 전에 별도의 `NVIM_APPNAME` 설정은 해제하세요.
+
+기존 설정은 덮어쓰기 전에 `nvim.backup.<timestamp>...`로 옮겨 보존합니다.
+기존 Packer 패키지가 있는 데이터도 별도로 백업하고, 현재 Lazy 데이터는 유지합니다.
+이전 설정으로 돌아가려면 Neovim을 종료하고 새 설정을 다른 경로로 옮긴 뒤
+출력된 백업 경로를 원래 위치로 복원하세요. 백업은 자동 삭제하지 않습니다.
+아이콘을 표시하려면 터미널 글꼴을 Nerd Font로 별도 지정하세요.
 
 ### 플러그인 관리
 
@@ -64,15 +95,6 @@ nvim
 - Markdown 렌더링용 `markdown`, `markdown_inline` Treesitter 파서는 자동으로
   설치합니다. 다른 파서는 `:TSInstall rust python c cpp lua bash asm`처럼
   명시적으로 설치합니다.
-
-과거의 `nvim.tar.xz`에는 Packer 패키지가 들어 있으며 현재 설치 과정에서는
-사용하지 않습니다. `script/setup_nvim_dump.sh`는 이 과거 덤프의 복원을 거부합니다.
-로컬 플러그인 데이터 스냅샷이 필요하면 `script/update_nvim_dump.sh`를 사용하세요.
-Lazy 데이터 압축에 성공한 뒤에만 기존 압축 파일을 교체합니다.
-`script/setup_nvim_dump.sh`는 현재 데이터를 백업한 뒤 Lazy 스냅샷을 복원합니다.
-두 스크립트는 `XDG_DATA_HOME`을 따르며, 스냅샷에는 Neovim 실행 파일이나 외부
-도구 설치 기능이 없습니다. `inbox/old_script/`는 과거 스크립트 보관용이며 현재
-설치에는 사용하지 않습니다.
 
 ### 설정 구성
 
@@ -155,8 +177,18 @@ Rust 단축키는 Rust 버퍼에 LSP가 연결될 때 해당 버퍼에만 등록
 
 ### 검증
 
+Windows 설치기 백업·실패 처리 검사는 별도 PowerShell 세션에서 실행합니다.
+이 검사는 도구를 모의 실행하며 Windows 실제 도구 설치 검증과는 구분됩니다.
+
+```powershell
+powershell -NoProfile -File tests/test_install_windows.ps1
+```
+
+
 ```sh
 bash tests/test_install.sh
+bash tests/test_installers.sh
+bash tests/test_releases.sh
 # After setup and plugin restore, using Neovim 0.12 or newer:
 nvim --headless '+luafile tests/test_config.lua' +qa
 nvim --headless '+luafile tests/test_search.lua' +qa
@@ -191,36 +223,65 @@ navigation, and Rust tooling. Plugins are managed by
 - For Python: `pyright-langserver` on `PATH` (provided by Pyright).
 - A system clipboard provider for `+` register copy/paste; a Nerd Font for icons.
 
-Language servers and external tools are installed separately. C/C++ and Lua
+Linux/macOS installers include language servers and external tools. On Windows,
+install them manually using the [official links guide](docs/windows-setup.md). C/C++ and Lua
 language servers are not enabled by this configuration.
 
 ### Install
 
-From the repository root:
+Clone the repository and run the installer for your OS:
+
+- Linux: Ubuntu 24.04+/Debian 12+, current Fedora/Arch, x86_64 or arm64.
+  Distro package installation requires `sudo` privileges.
+- macOS: Apple Silicon, or Intel with an existing working Homebrew installation.
+  Complete Apple's Command Line Tools dialog and rerun if prompted. Automatic
+  Homebrew bootstrap supports Apple Silicon.
+- Windows: Windows 10/11 x64, PowerShell 5.1+. Install tools manually from the
+  [official download links below](#windows-downloads) first.
+  Follow the [Windows setup guide](docs/windows-setup.md) for PATH and component selection.
+
+Tools include Git, curl, a C toolchain, Neovim 0.12+, native tree-sitter CLI 0.26.1+,
+fd, rg, fzf 0.36+, Node/npm, Pyright, Rust, rust-analyzer, and rustfmt. Linux also
+installs X11/Wayland clipboard tools. Unix shell startup files load the user tool
+PATH. On Windows, add tools to PATH manually and open a new terminal. Use
+`check-tools-windows.ps1` to inspect resolved tools and official links. Upgrade
+older system tools if Machine PATH selects them first.
 
 ```sh
-bash script/setup_init_file.sh
-nvim --headless '+Lazy! restore' +qa
-nvim
+# Linux
+bash script/install-linux.sh
+# macOS
+bash script/install-macos.sh
 ```
 
-The setup script also works from another directory when invoked by its full path.
-It links this repository's `nvim/` directory to
-`${XDG_CONFIG_HOME:-$HOME/.config}/nvim`; keep the repository at that location.
-lazy.nvim bootstraps automatically. `Lazy restore` installs the versions recorded
-in `nvim/lazy-lock.json`.
+```powershell
+# Windows PowerShell: install tools from official links first, then check and set up
+powershell -NoProfile -ExecutionPolicy Bypass -File .\script\check-tools-windows.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\script\install-windows.ps1
+```
 
-Existing configuration directories, files, and symlinks are moved to a sibling
-`nvim.backup.YYYYmmdd-HHMMSS.PID` path before linking. Existing data under
-`${XDG_DATA_HOME:-$HOME/.local/share}/nvim` is also backed up if it contains old
-`site/pack/packer` packages. Otherwise, installed Lazy data is preserved. Backup
-paths are printed, and running setup again keeps an already-correct link.
+Linux/macOS installers install tools, back up/link configuration, restore plugins,
+install parsers, and run startup/search checks. Windows checks manually installed
+tools before backing up/copying configuration and restoring plugins.
+Use `check-tools-windows.ps1` to inspect Windows prerequisites only.
+Use `install-tools-linux.sh` or `install-tools-macos.sh` for tools alone, or
+`--skip-tools` on Unix to keep existing tools.
+Neovim and tree-sitter resolve the latest official stable release at runtime and
+upgrade older installations. Other tools use the latest versions offered by their
+package managers. Minimum compatibility checks remain; plugins use the lockfile. Preview commands without
+changes with `--dry-run` on Unix or `-WhatIf` on Windows.
 
-To restore a previous configuration, close Neovim, remove the newly installed
-configuration symlink with `unlink`, and move the printed configuration backup
-back to its original path. A data backup can be restored separately by first
-moving any newly generated data directory aside. Backups are not deleted
-automatically.
+Linux/macOS link `nvim/` to `${XDG_CONFIG_HOME:-$HOME/.config}/nvim`; keep the
+repository in place. Windows copies it to `%LOCALAPPDATA%/nvim` without requiring
+privileged symlinks; rerun after changing the repository configuration.
+`XDG_CONFIG_HOME` overrides the config root. Use the default app name `nvim` and
+unset custom `NVIM_APPNAME` values before installation.
+
+Existing configuration is moved to `nvim.backup.<timestamp>...` before replacement.
+Data containing legacy Packer packages is also backed up; existing Lazy data is
+retained. To restore a backup, close Neovim, move the new configuration aside, and
+move the printed backup path to its original location. Backups are never deleted
+automatically. Select a Nerd Font in your terminal separately for icon display.
 
 ### Plugin maintenance
 
@@ -232,15 +293,6 @@ automatically.
 - The `markdown` and `markdown_inline` Treesitter parsers are installed for
   Markdown rendering. Other parsers are installed explicitly, for example
   `:TSInstall rust python c cpp lua bash asm`.
-
-The historical `nvim.tar.xz` contains Packer packages and is not part of the
-installation workflow. `script/setup_nvim_dump.sh` refuses that legacy archive.
-If a local plugin-data snapshot is needed, `script/update_nvim_dump.sh` creates a
-Lazy snapshot and replaces the archive only after compression succeeds.
-`script/setup_nvim_dump.sh` restores a Lazy snapshot after backing up current
-data. These scripts honor `XDG_DATA_HOME`; snapshots do not install Neovim or
-external tools. `inbox/old_script/` contains historical scripts and is not used
-for installation.
 
 ### Configuration
 
@@ -327,8 +379,18 @@ preview (hidden initially by the fzf-vim profile).
 
 ### Checks
 
+Run the Windows backup/failure checks in a fresh PowerShell session. Tools are
+mocked; this does not validate native Windows tool installation.
+
+```powershell
+powershell -NoProfile -File tests/test_install_windows.ps1
+```
+
+
 ```sh
 bash tests/test_install.sh
+bash tests/test_installers.sh
+bash tests/test_releases.sh
 # After setup and plugin restore, using Neovim 0.12 or newer:
 nvim --headless '+luafile tests/test_config.lua' +qa
 nvim --headless '+luafile tests/test_search.lua' +qa
@@ -362,34 +424,65 @@ Space キーを使ったショートカット、tmux 風のウィンドウ移動
 - Python 用：`PATH` 上の `pyright-langserver`（Pyright に含まれます）。
 - `+` レジスターによるコピーと貼り付けに使うシステムクリップボードプロバイダーと、アイコン表示用の Nerd Font。
 
-言語サーバーと外部ツールは別途インストールしてください。
+Linux/macOS のインストーラーは言語サーバーと外部ツールも導入します。
+Windows は[公式リンクの案内](docs/windows-setup.md)から手動で導入します。
 この設定では C/C++ と Lua の言語サーバーを有効にしていません。
 
 ### インストール
 
-リポジトリのルートで実行します。
+リポジトリを取得して、OS に対応するコマンドを実行します。
+
+- Linux：Ubuntu 24.04+/Debian 12+、現在の Fedora/Arch、x86_64 または arm64。
+  システムパッケージの導入には `sudo` 権限が必要です。
+- macOS：Apple Silicon、または既存の Homebrew が動作する Intel Mac。
+  Command Line Tools のダイアログが開いた場合は導入後に再実行してください。
+  Homebrew の自動導入は Apple Silicon に対応します。
+- Windows：Windows 10/11 x64、PowerShell 5.1+。最初に
+  [下記の公式ダウンロードリンク](#windows-downloads)からツールを手動で導入します。
+  PATH と導入項目は [Windows 手動セットアップ](docs/windows-setup.md)を参照してください。
+
+Git、curl、C ツールチェーン、Neovim 0.12+、ネイティブ tree-sitter CLI 0.26.1+、
+fd、rg、fzf 0.36+、Node/npm、Pyright、Rust、rust-analyzer、rustfmt を導入します。
+Linux は X11/Wayland のクリップボードツールも導入します。Unix はシェルの
+初期化ファイルを更新します。Windows は PATH を手動で設定してから新しい
+ターミナルを開き、`check-tools-windows.ps1` でツールと公式リンクを確認します。
+古いシステムのツールが先に選択される場合は、そのインストールを更新してください。
 
 ```sh
-bash script/setup_init_file.sh
-nvim --headless '+Lazy! restore' +qa
-nvim
+# Linux
+bash script/install-linux.sh
+# macOS
+bash script/install-macos.sh
 ```
 
-セットアップスクリプトは、絶対パスで指定すれば別のディレクトリからも実行できます。
-このリポジトリの `nvim/` ディレクトリへのリンクを
-`${XDG_CONFIG_HOME:-$HOME/.config}/nvim` に作成するため、リポジトリは移動せずに保管してください。
-lazy.nvim は自動的に導入されます。`Lazy restore` は `nvim/lazy-lock.json` に記録されたバージョンをインストールします。
+```powershell
+# Windows PowerShell: install tools from official links first, then check and set up
+powershell -NoProfile -ExecutionPolicy Bypass -File .\script\check-tools-windows.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\script\install-windows.ps1
+```
 
-既存の設定ディレクトリ、ファイル、シンボリックリンクは、リンクを作成する前に同じ親ディレクトリ内の
-`nvim.backup.YYYYmmdd-HHMMSS.PID` へ移動します。
-`${XDG_DATA_HOME:-$HOME/.local/share}/nvim` の既存データに古い `site/pack/packer` パッケージが含まれる場合は、
-そのデータもバックアップします。それ以外の場合は、インストール済みの Lazy データを保持します。
-バックアップ先のパスは画面に表示されます。セットアップを再実行しても、正しいリンクはそのまま保持します。
+Linux/macOS はツール導入、設定のバックアップとリンク、プラグイン復元、
+パーサー導入、起動・検索テストを実行します。Windows は手動導入済みのツールを
+確認してから、設定のバックアップ／コピーとプラグイン導入を実行します。
+Windows の確認のみは `check-tools-windows.ps1` を使用します。
+ツールのみは `install-tools-linux.sh`、`install-tools-macos.sh`、Unix での
+ツール導入省略は `--skip-tools` を指定します。
+Neovim と tree-sitter は実行時に公式の最新安定リリースを取得し、古い導入を更新します。
+その他のツールはパッケージマネージャーが提供する最新版を使用します。
+最低バージョンの確認は維持し、プラグインはロックファイルから復元します。
+変更せずに確認するには Unix は `--dry-run`、Windows は `-WhatIf` を指定します。
 
-以前の設定に戻すには、Neovim を終了し、今回作成した設定のシンボリックリンクを `unlink` で削除してから、
-表示された設定のバックアップを元のパスへ戻してください。
-データのバックアップは、新しく生成されたデータディレクトリを先に別の場所へ移動すると、個別に復元できます。
-バックアップは自動では削除しません。
+Linux/macOS は `nvim/` を `${XDG_CONFIG_HOME:-$HOME/.config}/nvim` にリンクするため、
+リポジトリを移動しないでください。Windows は管理者権限の必要なリンクを使わず
+`%LOCALAPPDATA%/nvim` にコピーします。設定の変更後は再実行してください。
+`XDG_CONFIG_HOME` で設定先を変更できます。アプリ名は既定の `nvim` を使い、
+独自の `NVIM_APPNAME` は解除してください。
+
+既存の設定は `nvim.backup.<timestamp>...` に移動して保存します。
+古い Packer パッケージを含むデータもバックアップし、現在の Lazy データは維持します。
+復元する場合は Neovim を終了し、新しい設定を別の場所に移動してから、
+表示されたバックアップを元のパスに戻します。バックアップは自動削除しません。
+アイコンを表示するには、ターミナルで Nerd Font を別途選択してください。
 
 ### プラグインの管理
 
@@ -400,14 +493,6 @@ lazy.nvim は自動的に導入されます。`Lazy restore` は `nvim/lazy-lock
 - `:checkhealth` でインストール済みのツールとプロバイダーを確認します。
 - Markdown の描画用に `markdown` と `markdown_inline` の Treesitter パーサーをインストールします。
   それ以外のパーサーは、`:TSInstall rust python c cpp lua bash asm` などで明示的にインストールしてください。
-
-従来の `nvim.tar.xz` には Packer のパッケージが含まれており、現在のインストール手順では使用しません。
-`script/setup_nvim_dump.sh` は、この旧形式のアーカイブを受け付けません。
-ローカルにプラグインデータのスナップショットが必要な場合は、`script/update_nvim_dump.sh` が Lazy のスナップショットを作成し、
-圧縮が成功した場合にのみアーカイブを置き換えます。
-`script/setup_nvim_dump.sh` は現在のデータをバックアップしてから Lazy のスナップショットを復元します。
-これらのスクリプトは `XDG_DATA_HOME` を使用します。スナップショットから Neovim 本体や外部ツールはインストールされません。
-`inbox/old_script/` には過去のスクリプトがあり、インストールには使用しません。
 
 ### 設定の構成
 
@@ -487,8 +572,18 @@ Rust のショートカットはバッファーごとに設定され、Rust バ�
 
 ### 動作確認
 
+Windows のバックアップ・失敗処理テストは、新しい PowerShell セッションで実行します。
+外部ツールはモックのため、Windows での実際のツール導入の検証とは異なります。
+
+```powershell
+powershell -NoProfile -File tests/test_install_windows.ps1
+```
+
+
 ```sh
 bash tests/test_install.sh
+bash tests/test_installers.sh
+bash tests/test_releases.sh
 # After setup and plugin restore, using Neovim 0.12 or newer:
 nvim --headless '+luafile tests/test_config.lua' +qa
 nvim --headless '+luafile tests/test_search.lua' +qa
@@ -497,3 +592,30 @@ nvim --headless '+luafile tests/test_search.lua' +qa
 インストーラーのテストは一時的な HOME/XDG パスを使用するため、既存の設定を置き換えません。
 Neovim のテストでは、プラグインの読み込み、補完機能、複数バッファーでの Rust ショートカットの動作に加え、
 補完、スニペット、Markdown の描画、ステータスラインを確認します。
+
+---
+
+<a id="windows-downloads"></a>
+
+## Windows 다운로드 / Downloads / ダウンロード
+
+Windows x64용 최신 안정 릴리스를 직접 설치합니다. Download the latest stable
+Windows x64 releases manually. Windows x64 の最新安定リリースを手動で導入します。
+자세한 설치 항목·PATH 설정 / component and PATH instructions / 詳細な設定：
+[Windows setup guide](docs/windows-setup.md).
+
+| 도구 / Tool | 공식 다운로드 / Official download |
+| --- | --- |
+| Neovim | [Latest release](https://github.com/neovim/neovim/releases/latest) |
+| tree-sitter CLI | [Latest native CLI](https://github.com/tree-sitter/tree-sitter/releases/latest) |
+| fd | [Latest release](https://github.com/sharkdp/fd/releases/latest) |
+| ripgrep (`rg`) | [Latest release](https://github.com/BurntSushi/ripgrep/releases/latest) |
+| fzf | [Latest release](https://github.com/junegunn/fzf/releases/latest) |
+| Git | [Git for Windows](https://git-scm.com/install/windows) |
+| curl | [Windows downloads](https://curl.se/windows/) |
+| Node.js/npm | [Latest LTS](https://nodejs.org/en/download) |
+| Rust/rustup | [Install Rust](https://rust-lang.org/tools/install/) |
+| LLVM/Clang | [Latest release](https://github.com/llvm/llvm-project/releases/latest) |
+| MSVC / Windows SDK | [C++ Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/) |
+| Pyright | [Installation instructions](https://github.com/microsoft/pyright#command-line) |
+| Nerd Font (optional) | [Font downloads](https://www.nerdfonts.com/font-downloads) |

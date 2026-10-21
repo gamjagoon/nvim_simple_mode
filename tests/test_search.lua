@@ -23,6 +23,7 @@ local function check()
       local cwd = root .. '/project ' .. index
       vim.fn.mkdir(cwd, 'p')
       vim.api.nvim_set_current_dir(cwd)
+      cwd = vim.fn.getcwd() -- Windows normalizes separators and drive letters.
       local buf = vim.api.nvim_create_buf(false, true)
       buffers[#buffers + 1] = buf
       vim.api.nvim_set_current_buf(buf)

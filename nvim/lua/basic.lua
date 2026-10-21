@@ -58,7 +58,9 @@ vmap.set({'n', 'v'}, 'P', '"+P', silent_opt)
 vmap.set({'n', 'v'}, 'Y', '"+Y', silent_opt)
 
 -- init lua
-vmap.set('n', '<leader>it','<cmd>e ~/.config/nvim/init.lua<cr>',silent_opt)
+vmap.set('n', '<leader>it', function()
+  vim.cmd.edit(vim.fn.fnameescape(vim.fn.stdpath('config') .. '/init.lua'))
+end, silent_opt)
 
 local fzf = require('fzf-lua')
 fzf.setup({

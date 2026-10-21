@@ -56,33 +56,27 @@ for candidate in "$config".backup.*; do
 done
 [[ "$found_file" == true ]] || fail 'regular file backup'
 
-# Snapshot and restore use XDG paths, and preserve installed data first.
-run_script update_nvim_dump.sh
-printf 'current data\n' > "$data/current"
-run_script setup_nvim_dump.sh
-[[ -f "$data/lazy/plugin/sentinel" && ! -e "$data/current" ]] || fail 'dump restoration'
-found_current=false
-for candidate in "$data".backup.*; do
-    if [[ -f "$candidate/current" ]]; then found_current=true; fi
-done
-[[ "$found_current" == true ]] || fail 'restore data backup'
-
-# Refuse an old Packer dump before altering current data.
-mkdir -p "$TEST_ROOT/legacy/nvim/site/pack/packer/start/plugin"
-tar -Jcf "$FIXTURE/nvim.tar.xz" -C "$TEST_ROOT/legacy" nvim
-if run_script setup_nvim_dump.sh; then fail 'accepted legacy Packer dump'; fi
-[[ -f "$data/lazy/plugin/sentinel" ]] || fail 'legacy rejection changed data'
-
-# A failed archive update must leave the previous archive byte-for-byte intact.
-cp "$FIXTURE/nvim.tar.xz" "$TEST_ROOT/previous.tar.xz"
-mkdir -p "$TEST_ROOT/bin"
-printf '#!/usr/bin/env bash\nexit 1\n' > "$TEST_ROOT/bin/tar"
-chmod +x "$TEST_ROOT/bin/tar"
-if PATH="$TEST_ROOT/bin:$PATH" run_script update_nvim_dump.sh; then fail 'tar failure ignored'; fi
-cmp "$FIXTURE/nvim.tar.xz" "$TEST_ROOT/previous.tar.xz" || fail 'failed update replaced archive'
-
 # Defaults also work without XDG environment variables.
 env -u XDG_CONFIG_HOME -u XDG_DATA_HOME HOME="$TEST_ROOT/default-home" \
     bash "$FIXTURE/script/setup_init_file.sh"
 [[ "$TEST_ROOT/default-home/.config/nvim" -ef "$FIXTURE/nvim" ]] || fail 'default HOME installation'
-printf 'PASS: installation backups, idempotency, XDG/default paths, dump restore and failure preservation\n'
+
+# Never move a directory containing the checkout out from under its own installer.
+for scope in config data; do
+    nested_root="$TEST_ROOT/nested-$scope"
+    mkdir -p "$nested_root/nvim/checkout/script" "$nested_root/nvim/checkout/nvim"
+    cp "$PROJECT_ROOT/script/setup_init_file.sh" "$nested_root/nvim/checkout/script/"
+    printf '%s\n' '-- nested fixture' > "$nested_root/nvim/checkout/nvim/init.lua"
+    nested_config="$nested_root"
+    if [[ "$scope" == data ]]; then
+        mkdir -p "$nested_root/nvim/site/pack/packer"
+        nested_config="$TEST_ROOT/unrelated-config"
+    fi
+    if env HOME="$TEST_ROOT/home" XDG_CONFIG_HOME="$nested_config" XDG_DATA_HOME="$nested_root" \
+        bash "$nested_root/nvim/checkout/script/setup_init_file.sh"; then
+        fail 'accepted checkout inside backup target'
+    fi
+    [[ -f "$nested_root/nvim/checkout/nvim/init.lua" && ! -L "$nested_root/nvim" ]] \
+        || fail 'nested checkout was moved'
+done
+printf 'PASS: installation backups, idempotency, XDG/default paths\n'
