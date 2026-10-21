@@ -75,7 +75,7 @@ require("evergarden").setup {
     cmp = false,
     fzf_lua = true,
     gitsigns = true,
-    indent_blankline = { enable = true, scope_color = 'red' },
+    indent_blankline = { enable = false },
     nvimtree = true,
     --rainbow_delimiters = true,
     --symbols_outline = true,
@@ -165,7 +165,6 @@ require("nvim-tree").setup({
   },
 })
 
-require("ibl").setup()
 local helpers = require 'incline.helpers'
 local devicons = require 'nvim-web-devicons'
 require('incline').setup {

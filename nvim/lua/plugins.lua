@@ -29,7 +29,14 @@ return require("lazy").setup({
 		"everviolet/nvim",
 		name = "evergarden"
 	},
-	"lukas-reineke/indent-blankline.nvim",
+	{
+		"shellRaining/hlchunk.nvim",
+		event = { "BufReadPre", "BufNewFile" },
+		opts = {
+			chunk = { enable = true },
+			indent = { enable = true },
+		},
+	},
 	{
 		"akinsho/bufferline.nvim", 
 		version= "*", 
