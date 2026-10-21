@@ -20,7 +20,7 @@ require("tokyonight").setup({
     sidebars = "dark", -- style for sidebars, see below
     floats = "dark", -- style for floating windows
   },
-  sidebars = { "qf", "help" }, -- Set a darker background on sidebar-like windows. For example: `["qf", "vista_kind", "terminal", "packer"]`
+  sidebars = { "qf", "help" }, -- Use a darker background in quickfix and help windows.
   day_brightness = 0.5, -- Adjusts the brightness of the colors of the **Day** style. Number between 0 and 1, from dull to vibrant colors
   hide_inactive_statusline = true, -- Enabling this option, will hide inactive statuslines and replace them with a thin border instead. Should work with the standard **StatusLine** and **LuaLine**.
   dim_inactive = false, -- dims inactive windows
@@ -71,20 +71,35 @@ require("evergarden").setup {
   overrides = {},
   color_overrides = {},
   integrations = {
-    --blink_cmp = true,
-    cmp = true,
-    --fzf_lua = true,
+    blink_cmp = true,
+    cmp = false,
+    fzf_lua = true,
     gitsigns = true,
     indent_blankline = { enable = true, scope_color = 'red' },
     nvimtree = true,
     --rainbow_delimiters = true,
     --symbols_outline = true,
-    telescope = true,
     --which_key = true,
     --neotree = true,
   },
 }
 require("evergarden").load()
+
+require('lualine').setup {
+  options = {
+    theme = 'auto',
+    globalstatus = true,
+  },
+  sections = {
+    lualine_a = { 'mode' },
+    lualine_b = { 'branch', 'diff', 'diagnostics' },
+    lualine_c = { 'filename' },
+    lualine_x = { 'encoding', 'fileformat', 'filetype' },
+    lualine_y = { 'progress' },
+    lualine_z = { 'location' },
+  },
+  extensions = { 'nvim-tree' },
+}
 
 
 -- ==============================================

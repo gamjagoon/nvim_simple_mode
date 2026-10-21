@@ -1,147 +1,29 @@
-local telescope = require("telescope")
-local lga_actions = require("telescope-live-grep-args.actions")
-local actions = require "telescope.actions"
-local cmp = require('cmp')
 local autopair = require('nvim-autopairs')
 
-require'nvim-treesitter.configs'.setup {
-	sync_install = false,
-	auto_install = false,
-	ignore_install = { "javascript" },
-	highlight = {
-	enable = true,
-	-- disable = { "c", "rust" },
-	disable = function(lang, buf)
-	local max_filesize = 200 * 1024 -- 100 KB
-	local ok, stats = pcall(vim.loop.fs_stat, vim.api.nvim_buf_get_name(buf))
-	if ok and stats and stats.size > max_filesize then
-		return true
-	end
-	end,
-	additional_vim_regex_highlighting = true,
-	},
-}
+local treesitter = require('nvim-treesitter')
+treesitter.setup({})
+treesitter.install({ 'markdown', 'markdown_inline' })
 
-telescope.setup {
-	defaults = {
-		file_ignore_patterns = {".git/"},
-		vimgrep_arguments = {
-		  'rg',
-		  '--color=never',
-		  '--no-heading',
-		  '--with-filename',
-		  '--line-number',
-		  '--column',
-		  '--smart-case'
-		},
-		mappings = {
-			i = {
-				["<C-o>"] = actions.select_vertical,
-				["<c-k>"] = actions.preview_scrolling_up,
-				["<c-j>"] = actions.preview_scrolling_down,
-				["<C-t>"] = lga_actions.quote_prompt({ postfix = " -t " }),
-				["<C-space>"] = actions.to_fuzzy_refine,
-			},
-		},
-	},
-	extensions = {
-		 live_grep_args = {
-		 	auto_quoting = true, -- enable/disable auto-quoting
-		 	mappings = { -- extend mappings
-		 		i = {
-		 				["<C-o>"] = lga_actions.select_vertical,
-		 				["<C-i>"] = lga_actions.quote_prompt({ postfix = " --iglob " }),
-		 				["<C-t>"] = lga_actions.quote_prompt({ postfix = " -t " }),
-		 				["<c-k>"] = lga_actions.preview_scrolling_up,
-		 				["<c-j>"] = lga_actions.preview_scrolling_down,
-		 			},
-		 	},
-		 },
-		fzf = {
-			fuzzy = true,					-- false will only do exact matching
-			override_generic_sorter = true,  -- override the generic sorter
-			override_file_sorter = true,	 -- override the file sorter
-			case_mode = "smart_case",		-- or "ignore_case" or "respect_case"
-									   --	   the default case_mode is "smart_case"
-		},
-	}
-}
-
-telescope.load_extension('fzf')
-telescope.load_extension("live_grep_args")
-
-require('nvim-treesitter.parsers').get_parser_configs().asm = {
-	install_info = {
-		url = 'https://github.com/rush-rs/tree-sitter-asm.git',
-		files = { 'src/parser.c' },
-		branch = 'main',
-	},
-}
-
-cmp.setup({
-	snippet = {
-		expand = function(args)
-			require('luasnip').lsp_expand(args.body) -- For `luasnip` users.
-		end,
-	},
-	sources = cmp.config.sources({
-		{name = 'nvim_lsp'},
-		{name = 'path'},
-		{name = 'buffer'},
-		{name = 'luasnip'},
-	}),
-	mapping = cmp.mapping.preset.insert({
-	  ['<C-b>'] = cmp.mapping.scroll_docs(-4),
-	  ['<C-f>'] = cmp.mapping.scroll_docs(4),
-	  ['<C-Space>'] = cmp.mapping.complete(),
-	  ['<C-e>'] = cmp.mapping.abort(),
-	  ['<CR>'] = cmp.mapping.confirm({ select = true }), -- Accept currently selected item. Set `select` to `false` to only confirm explicitly selected items.
-	}),
+vim.api.nvim_create_autocmd('FileType', {
+  group = vim.api.nvim_create_augroup('UserTreesitter', { clear = true }),
+  callback = function(ev)
+    local lang = vim.treesitter.language.get_lang(vim.bo[ev.buf].filetype)
+    if not lang then
+      return
+    end
+    if not vim.treesitter.language.add(lang) then
+      return
+    end
+    local stats = (vim.uv or vim.loop).fs_stat(vim.api.nvim_buf_get_name(ev.buf))
+    if stats and stats.size > 200 * 1024 then
+      return
+    end
+    vim.treesitter.start(ev.buf, lang)
+  end,
 })
-
--- Use buffer source for `/` and `?` (if you enabled `native_menu`, this won't work anymore).
-cmp.setup.cmdline({ '/', '?' }, {
-  mapping = cmp.mapping.preset.cmdline(),
-  sources = {
-	{name = 'buffer',
-	  option = {
-		get_bufnrs = function()
-			-- All Buffers
-			--return vim.api.nvim_list_bufs()
-
-			-- Performance on large text files
-			local buf = vim.api.nvim_get_current_buf()
-			local byte_size = vim.api.nvim_buf_get_offset(buf, vim.api.nvim_buf_line_count(buf))
-			if byte_size > 1024 * 1024 then -- 1 Megabyte max
-				return {}
-			end
-			return { buf }
-
-			-- -- Visible buffers
-			--local bufs = {}
-			--for _, win in ipairs(vim.api.nvim_list_wins()) do
-			--	bufs[vim.api.nvim_win_get_buf(win)] = true
-			--end
-			--return vim.tbl_keys(bufs)
-		end
-	  }
-	},
-  }
-})
-
--- Use cmdline & path source for ':' (if you enabled `native_menu`, this won't work anymore).
-cmp.setup.cmdline(':', {
-  mapping = cmp.mapping.preset.cmdline(),
-  sources = cmp.config.sources({
-	{ name = 'path' }
-  }, {
-	{ name = 'cmdline' }
-  })
-})
-
 
 autopair.setup({
-	disable_filetype = { "TelescopePrompt", "vim" },
+	disable_filetype = { "vim" },
 })
 
 

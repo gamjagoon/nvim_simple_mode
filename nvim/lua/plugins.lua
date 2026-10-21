@@ -23,14 +23,11 @@ vim.g.maplocalleader = "\\"
 
 
 return require("lazy").setup({
-	-- Packer can manage itself
-	"wbthomason/packer.nvim",
-
 	-- UI/colorscheme
 	"folke/tokyonight.nvim",
 	{
 		"everviolet/nvim",
-		as = "evergarden"
+		name = "evergarden"
 	},
 	"lukas-reineke/indent-blankline.nvim",
 	{
@@ -39,68 +36,105 @@ return require("lazy").setup({
 		dependencies = "nvim-tree/nvim-web-devicons"
 	},
 	"b0o/incline.nvim",
+	{
+		"nvim-lualine/lualine.nvim",
+		dependencies = { "nvim-tree/nvim-web-devicons" },
+	},
 
 	-- lsp
 	"neovim/nvim-lspconfig",
 	{ 
 		"mrcjkb/rustaceanvim",
+		lazy = false,
+		init = function()
+			vim.g.rustaceanvim = {
+				tools = {
+					hover_actions = { replace_builtin_hover = true },
+					float_win_config = { border = "none", auto_focus = true },
+				},
+				server = {
+					on_attach = function(_, bufnr)
+						vim.lsp.inlay_hint.enable(true, { bufnr = bufnr })
+					end,
+				},
+			}
+		end,
 	},
-	"rust-lang/rust.vim",
-	"nvim-treesitter/nvim-treesitter",
+	{
+		"rust-lang/rust.vim",
+		init = function()
+			vim.g.rustfmt_autosave = 1
+		end,
+	},
+	{
+		"nvim-treesitter/nvim-treesitter",
+		branch = "main",
+		lazy = false,
+		build = ":TSUpdate",
+	},
+	{
+		"MeanderingProgrammer/render-markdown.nvim",
+		ft = { "markdown" },
+		cmd = { "RenderMarkdown" },
+		dependencies = {
+			"nvim-treesitter/nvim-treesitter",
+			"nvim-tree/nvim-web-devicons",
+		},
+		opts = { completions = { lsp = { enabled = true } } },
+	},
 
 	-- util
 	"lewis6991/gitsigns.nvim",
-	{
-		"nvim-telescope/telescope.nvim",
-		dependencies = {
-			{
-				"nvim-lua/plenary.nvim",
-				"nvim-telescope/telescope-live-grep-args.nvim",
-			},
-		},
-	},
-	{
-		"nvim-telescope/telescope-fzf-native.nvim",
-		build = "make"
-	},
-	"nvim-lua/popup.nvim",
 	"windwp/nvim-autopairs",
 	{
 		"nvim-tree/nvim-tree.lua",
 		dependencies = {
 			"nvim-tree/nvim-web-devicons", -- optional
 		},
-		config = function()
-			require("nvim-tree").setup {}
-		end
 	},
 	{
 		"ibhagwan/fzf-lua",
 		-- optional for icon support
 		dependencies = { "nvim-tree/nvim-web-devicons" },
-		-- or if using mini.icons/mini.nvim
-		-- dependencies = { "nvim-mini/mini.icons" },
-		opts = {}
 	},
 	"RaafatTurki/hex.nvim",
 	"tpope/vim-repeat",
+
+	-- auto complete
 	{
-		"ggandor/leap.nvim",
-		require = {
-			{
-				"tpope/vim-repeat"
+		"saghen/blink.cmp",
+		version = "1.*",
+		dependencies = { "L3MON4D3/LuaSnip" },
+		opts = {
+			keymap = {
+				preset = "enter",
+				["<C-k>"] = false, -- Keep LuaSnip's explicit expansion shortcut.
+				["<C-e>"] = {
+					"cancel",
+					function()
+						local ls = require("luasnip")
+						if ls.choice_active() then
+							ls.change_choice(1)
+							return true
+						end
+					end,
+					"fallback",
+				},
+			},
+			snippets = { preset = "luasnip" },
+			sources = { default = { "lsp", "path", "snippets", "buffer" } },
+			completion = {
+				list = { selection = { preselect = true, auto_insert = false } },
+				documentation = { auto_show = true },
+			},
+			cmdline = {
+				keymap = { preset = "cmdline" },
+				completion = { menu = { auto_show = true } },
 			},
 		},
 	},
-
-	-- auto complete
-	"hrsh7th/cmp-buffer",
-	"hrsh7th/cmp-nvim-lsp",
-	"hrsh7th/cmp-path",
-	"hrsh7th/cmp-cmdline",
-	"hrsh7th/cmp-calc",
-	"hrsh7th/nvim-cmp",
-	"L3MON4D3/LuaSnip",
-	"saadparwaiz1/cmp_luasnip",
 	"joelbeedle/pseudo-syntax",
+}, {
+	-- These plugins use Git checkouts; none require LuaRocks packages.
+	rocks = { enabled = false },
 })

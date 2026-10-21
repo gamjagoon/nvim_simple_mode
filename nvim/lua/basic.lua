@@ -2,16 +2,6 @@ local vopt = vim.opt
 local vmap = vim.keymap
 local silent_opt = {noremap=true, silent = true}
 
-local leap = require('leap')
-vim.keymap.set({'n', 'x', 'o'}, '<space>s', '<Plug>(leap)')
-vim.keymap.set('n',             '<space>S', '<Plug>(leap-from-window)')
-leap.opts.case_sensitive = true
-leap.opts.equivalence_classes = { ' \t\r\n', '([{', ')]}', '\'"`' }
-
--- invoking Leap.
-require('leap.user').set_repeat_keys('<enter>', '<backspace>')
-
-
 -- View Setting
 vopt.mouse  = 'a'
 vopt.nu = true
@@ -70,21 +60,45 @@ vmap.set({'n', 'v'}, 'Y', '"+Y', silent_opt)
 -- init lua
 vmap.set('n', '<leader>it','<cmd>e ~/.config/nvim/init.lua<cr>',silent_opt)
 
-require('fzf-lua').setup({'fzf-vim'})
+local fzf = require('fzf-lua')
+fzf.setup({
+  'fzf-vim',
+  keymap = {
+    builtin = {
+      ['<C-k>'] = 'preview-up',
+      ['<C-j>'] = 'preview-down',
+    },
+  },
+  actions = {
+    files = {
+      ['ctrl-o'] = fzf.actions.file_vsplit,
+    },
+  },
+  files = {
+    cmd = 'fd --color=never --type f --type l --exclude .git',
+  },
+  grep = {
+    cmd = 'rg --column --line-number --no-heading --color=always --smart-case -e',
+    rg_glob = true,
+  },
+})
 
--- telescope 
-local function search_word_under_cursor()
-  local word = vim.fn.expand("<cword>")
-  require('telescope').extensions.live_grep_args.live_grep_args({ default_text = word, shorten_path = true, word_match = "-w", only_sort_text = true, search = ''})
-end
-
-vim.keymap.set('n', '<space>ff', "<cmd>Telescope find_files<cr>", {})
-vim.keymap.set('n', '<space>fs', "<cmd>Telescope grep_string<cr>", {})
-vim.keymap.set('n', '<space>fg', "<cmd>FzfLua live_grep_native multiprocess=true<cr>", silent_opt)
-vim.keymap.set('n', '<space>/', "<cmd> Telescope current_buffer_fuzzy_find theme=ivy<cr>", {})
-
-
-vim.keymap.set("n", "<space>rg", search_word_under_cursor, silent_opt)
+-- Search within Neovim's current working directory (:pwd).
+vmap.set('n', '<space>ff', function()
+  fzf.files({ cwd = vim.fn.getcwd() })
+end, silent_opt)
+vmap.set('n', '<space>fs', function()
+  fzf.grep_cword({ cwd = vim.fn.getcwd() })
+end, silent_opt)
+vmap.set('n', '<space>fg', function()
+  fzf.live_grep({ cwd = vim.fn.getcwd() })
+end, silent_opt)
+vmap.set('n', '<space>/', function()
+  fzf.blines()
+end, silent_opt)
+vmap.set('n', '<space>rg', function()
+  fzf.live_grep({ cwd = vim.fn.getcwd(), search = vim.fn.expand('<cword>') })
+end, silent_opt)
 
 -- nvim tree
 vim.keymap.set('n', '<space>e', '<cmd>NvimTreeToggle<cr>', {})
@@ -103,61 +117,3 @@ vim.keymap.set('n', '<space>9', '<cmd>BufferLineGoToBuffer 9<cr>', {})
 -- highlight
 vim.cmd([[set cursorline]])
 vim.cmd([[autocmd FileType c,cpp,sh,bash setlocal noet ci pi sts=0 sw=4 ts=4]])
-
--- Rust Setup
-local bufnr = vim.api.nvim_get_current_buf()
-vim.keymap.set(
-	"n", 
-	"<space>ca", 
-	function()
-		vim.cmd.RustLsp('codeAction') -- supports rust-analyzer's grouping or vim.lsp.buf.codeAction() if you don't want grouping.
-	end,
-	{ silent = true, buffer = bufnr }
-)
-
-vim.keymap.set(
-	"n", 
-	"<space>cd", 
-	function()
-		vim.cmd.RustLsp('renderDiagnostic') -- supports rust-analyzer's grouping or vim.lsp.buf.codeAction() if you don't want grouping.
-	end,
-	{ silent = true, buffer = bufnr }
-)
-
-vim.keymap.set(
-	"n", 
-	"<space>ce", 
-	function()
-		vim.cmd.RustLsp('explainError') -- supports rust-analyzer's grouping or vim.lsp.buf.codeAction() if you don't want grouping.
-	end,
-	{ silent = true, buffer = bufnr }
-)
-
-vim.keymap.set(
-	"n", 
-	"K", 
-	function()
-		vim.cmd.RustLsp({'hover', 'actions'}) -- supports rust-analyzer's grouping or vim.lsp.buf.codeAction() if you don't want grouping.
-	end,
-	{ silent = true, buffer = bufnr }
-)
-
-vim.keymap.set( "n", "<space>rl",':RustLsp ' ,{})
-
-vim.keymap.set(
-	"n", 
-	"<space>dr", 
-	function()
-		vim.cmd.RustLsp('renderDiagnotic') -- supports rust-analyzer's grouping or vim.lsp.buf.codeAction() if you don't want grouping.
-	end,
-	{ silent = true }
-)
-
-vim.keymap.set(
-	"n",
-	"<space>de",
-	function()
-		vim.cmd.RustLsp('explainError') -- supports rust-analyzer's grouping or vim.lsp.buf.codeAction() if you don't want grouping.
-	end,
-	{ silent = true }
-)

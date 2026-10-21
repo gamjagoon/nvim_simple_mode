@@ -14,7 +14,7 @@ ls.add_snippets(nil, {
     all = {
         snip({
             trig = "date",
-            namr = "Date",
+            name = "Date",
             dscr = "Date in the form of YYYY-MM-DD",
         }, {
             func(date, {}),
@@ -26,7 +26,8 @@ vim.keymap.set({"i"}, "<C-K>", function() ls.expand() end, {silent = true})
 vim.keymap.set({"i", "s"}, "<C-L>", function() ls.jump( 1) end, {silent = true})
 vim.keymap.set({"i", "s"}, "<C-J>", function() ls.jump(-1) end, {silent = true})
 
-vim.keymap.set({"i", "s"}, "<C-E>", function()
+-- Insert-mode Ctrl-E is handled by Blink before falling back to snippet choices.
+vim.keymap.set({"s"}, "<C-E>", function()
 	if ls.choice_active() then
 		ls.change_choice(1)
 	end

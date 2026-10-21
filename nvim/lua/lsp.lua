@@ -1,5 +1,5 @@
-local lsp_capabilites = require("cmp_nvim_lsp").default_capabilities()
-local lspconfig = require('lspconfig')
+local lsp_capabilities = require("blink.cmp").get_lsp_capabilities()
+vim.lsp.config('*', { capabilities = lsp_capabilities })
 
 vim.api.nvim_create_autocmd('LspAttach', {
   group = vim.api.nvim_create_augroup('UserLspConfig', {}),
@@ -14,71 +14,25 @@ vim.api.nvim_create_autocmd('LspAttach', {
     vim.keymap.set('n', '<space>rn', vim.lsp.buf.rename, opts)
     vim.keymap.set({ 'n', 'v' }, '<space>ca', vim.lsp.buf.code_action, opts)
     vim.keymap.set('n', 'gr', vim.lsp.buf.references, opts)
+
+    if vim.bo[ev.buf].filetype == 'rust' then
+      local function rust_map(lhs, command)
+        vim.keymap.set('n', lhs, function()
+          vim.cmd.RustLsp(command)
+        end, opts)
+      end
+      rust_map('<space>ca', 'codeAction')
+      rust_map('<space>cd', 'renderDiagnostic')
+      rust_map('<space>dr', 'renderDiagnostic')
+      rust_map('<space>ce', 'explainError')
+      rust_map('<space>de', 'explainError')
+      rust_map('K', { 'hover', 'actions' })
+      vim.keymap.set('n', '<space>rl', ':RustLsp ', opts)
+    end
   end,
 })
 
 vim.lsp.enable('pyright')
-
---lspconfig.clangd.setup{}
-
---lspconfig.lua_ls.setup {
---  on_init = function(client)
---    local path = client.workspace_folders[1].name
---    if vim.loop.fs_stat(path..'/.luarc.json') or vim.loop.fs_stat(path..'/.luarc.jsonc') then
---      return
---    end
---
---    client.config.settings.Lua = vim.tbl_deep_extend('force', client.config.settings.Lua, {
---      runtime = {
---        version = 'LuaJIT'
---      },
---      -- Make the server aware of Neovim runtime files
---      workspace = {
---        checkThirdParty = false,
---        library = {
---          vim.env.VIMRUNTIME
---          -- Depending on the usage, you might want to add additional paths here.
---          -- "${3rd}/luv/library"
---          -- "${3rd}/busted/library",
---        }
---        -- or pull in all of 'runtimepath'. NOTE: this is a lot slower
---        -- library = vim.api.nvim_get_runtime_file("", true)
---      }
---    })
---  end,
---  settings = {
---    Lua = {}
---  }
---}
-
-vim.g.rustaceanvim = {
-  -- Plugin configuration
-  tools = {
-		hover_actions = {
-			replace_builtin_hover = true,
-		},
-		float_win_config = {
-			border = "none",
-			auto_focus = true,
-		},
-  },
-  -- LSP configuration
-  server = {
-    on_attach = function(client, bufnr)
-	  vim.lsp.inlay_hint.enable(true)
-    end,
-    default_settings = {
-      -- rust-analyzer language server configuration
-      ['rust-analyzer'] = {
-      },
-    },
-  },
-  -- DAP configuration
-  dap = {
-  },
-}
-
-vim.g.rustfmt_autosave = 1
 
 -- LSP Diagnostics Options Setup 
 local sign = function(opts)
