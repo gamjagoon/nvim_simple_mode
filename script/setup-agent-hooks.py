@@ -21,12 +21,28 @@ def command(agent):
 def claude_config(text, remove=False):
     data = json.loads(text or '{}')
     hooks = data.setdefault('hooks', {})
-    groups = hooks.setdefault('Stop', [])
-    # Own only a dedicated group identified by the shell comment.
-    groups[:] = [g for g in groups if not (len(g.get('hooks', [])) == 1 and
-        g['hooks'][0].get('command', '').endswith(' # ' + MARKER))]
-    if not remove:
-        groups.append({'hooks': [{'type': 'command', 'command': command('claude') + ' # ' + MARKER, 'timeout': 10}]})
+    specs = [('Stop', None, 'complete'),
+             ('Notification', 'permission_prompt|elicitation_dialog|elicitation_url_dialog|agent_needs_input', 'question'),
+             ('PreToolUse', 'AskUserQuestion', 'question')]
+    for event, matcher, notification in specs:
+        groups = hooks.get(event, [])
+        # Remove only owned command entries, preserving user-added peers in a group.
+        cleaned = []
+        for group in groups:
+            entries = group.get('hooks', [])
+            kept = [h for h in entries if not h.get('command', '').endswith(' # ' + MARKER)]
+            if kept or not entries:
+                cleaned.append(dict(group, hooks=kept))
+        if not remove:
+            group = {'hooks': [{'type': 'command', 'command': command('claude') +
+                ' --event ' + notification + ' # ' + MARKER, 'timeout': 10}]}
+            if matcher:
+                group['matcher'] = matcher
+            cleaned.append(group)
+        if cleaned:
+            hooks[event] = cleaned
+        else:
+            hooks.pop(event, None)
     return json.dumps(data, indent=2, ensure_ascii=False) + '\n'
 
 
@@ -93,8 +109,11 @@ def pi_extension(event):
     return '''// Managed by earlgrey-agent-notify. Re-run setup-agent-hooks.py to update.
 import { spawn } from "node:child_process";
 export default function (pi) {
-  pi.on(EVENT, async (_event, ctx) => {
-    const child = spawn(PYTHON, [SENDER, "--agent", "pi"], {
+  function notify(ctx, event) {
+    // Core workers run without an interactive UI. Interactive custom workers
+    // must set EARLGREY_NOTIFY_DISABLE=1 when launched.
+    if (!ctx.hasUI || process.env.EARLGREY_NOTIFY_DISABLE === "1") return;
+    const child = spawn(PYTHON, [SENDER, "--agent", "pi", "--event", event], {
       stdio: ["pipe", "ignore", "ignore"], detached: true,
     });
     const report = (error) => {
@@ -106,7 +125,9 @@ export default function (pi) {
     child.on("exit", (code) => { if (code !== null && code !== 0) report("exit " + code); });
     child.stdin.end(JSON.stringify({cwd: ctx.cwd, session_id: ctx.sessionManager.getSessionId()}));
     child.unref();
-  });
+  }
+  pi.on(EVENT, async (_event, ctx) => { notify(ctx, "complete"); });
+  pi.on("ui_prompt_start", async (_event, ctx) => { notify(ctx, "question"); });
 }
 '''.replace('EVENT', json.dumps(event)).replace('PYTHON', json.dumps(sys.executable)).replace('SENDER', json.dumps(str(Path(__file__).resolve().with_name('agent-notify.py'))))
 
@@ -152,7 +173,7 @@ def main():
     base = Path.home()
     paths = {
         'claude': Path(os.environ.get('CLAUDE_CONFIG_DIR', base / '.claude')) / 'settings.json',
-        'jcode': base / '.jcode/config.toml',
+        'jcode': Path(os.environ.get('JCODE_HOME', base / '.jcode')) / 'config.toml',
         'pi': Path(os.environ.get('PI_CODING_AGENT_DIR', base / '.pi/agent')) / 'extensions/earlgrey-agent-notify.js',
     }
     failures = 0

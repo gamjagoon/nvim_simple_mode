@@ -13,10 +13,11 @@ function M.receive(event)
   local agent = clean(event.agent, 'Agent')
   local project = vim.fn.fnamemodify(clean(event.cwd, ''), ':t')
   local session = clean(event.session_id, ''):sub(1, 12)
-  local title = agent .. (project ~= '' and ' · ' .. project or '')
+  local question = event.kind == 'question'
+  local title = agent .. (question and ' · 입력 필요' or '') .. (project ~= '' and ' · ' .. project or '')
   local message = clean(event.message, '응답이 끝났습니다.')
   if session ~= '' then message = message .. '\nSession: ' .. session end
-  vim.notify(message, vim.log.levels.INFO, { title = title, timeout = 10000 })
+  vim.notify(message, question and vim.log.levels.WARN or vim.log.levels.INFO, { title = title, timeout = 10000 })
 end
 
 function M.poll()

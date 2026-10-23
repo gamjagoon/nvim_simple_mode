@@ -20,9 +20,9 @@ Backups can contain private settings: keep them local.
 
 | Agent | Configuration | Event |
 | --- | --- | --- |
-| Claude Code | `~/.claude/settings.json` (`CLAUDE_CONFIG_DIR` respected) | `Stop` |
+| Claude Code | `~/.claude/settings.json` (`CLAUDE_CONFIG_DIR` respected) | `Stop`, selected `Notification`, `PreToolUse: AskUserQuestion` |
 | jcode | `~/.jcode/config.toml` | `hooks.turn_end` |
-| Pi | `~/.pi/agent/extensions/earlgrey-agent-notify.js` (`PI_CODING_AGENT_DIR` respected) | `agent_settled` |
+| Pi | `~/.pi/agent/extensions/earlgrey-agent-notify.js` (`PI_CODING_AGENT_DIR` respected) | `agent_settled`, `ui_prompt_start` |
 
 These events indicate a response/run ended, not that tests passed or the requested
 work succeeded. Claude Stop can run before another Stop hook requests more work.
@@ -51,6 +51,34 @@ Upstream contracts:
 [Claude hooks](https://code.claude.com/docs/en/hooks),
 [jcode lifecycle hooks](https://github.com/1jehuang/jcode/blob/master/docs/HOOKS.md),
 [Pi extensions](https://github.com/badlogic/pi-mono/blob/main/packages/coding-agent/docs/extensions.md).
+
+## 메인 에이전트와 질문 알림
+
+완료 알림과 질문/입력 요청 알림을 구분합니다. 질문에는 `입력 필요`를 표시하고
+Neovim에서는 경고색으로 보여줍니다. 모든 채널의 전송 전에 하위 에이전트인지
+검사하므로 억제된 이벤트는 OS 팝업·소리·Neovim 알림 모두 발생하지 않습니다.
+
+- Claude: `SubagentStop`은 등록하지 않습니다. `agent_id`나 하위 에이전트의
+  transcript가 있는 이벤트도 무시합니다. `agent_type`만 지정된 메인
+  `--agent` 세션은 정상으로 처리합니다. `AskUserQuestion` 직전과 권한 요청·
+  elicitation·입력 요청 알림에 연결하며 단순 `idle_prompt`는 제외합니다.
+- jcode: `JCODE_HOME` 또는 `~/.jcode`의 `sessions/{session_id}.json`에서
+  `parent_id: null`인 메인 세션만 허용합니다. 하위·debug 세션과 역할 확인이
+  불가능한 세션은 알리지 않습니다. 공식 hook에는 별도 질문 이벤트가 없으므로,
+  자연어 질문을 남기며 턴을 종료하면 기존 `turn_end` 알림이 울립니다.
+  도구 실행 중의 별도 질문 대기를 감지하는 기능은 제공하지 않습니다.
+- Pi: UI가 없는 하위 프로세스에서는 hook을 실행하지 않습니다. 메인 UI의
+  `ui_prompt_start`에서 입력 요청을 알립니다. 하위 에이전트를 자체 UI와 함께
+  실행하는 사용자 정의 확장은 구분할 표준 필드가 없으므로, 해당 하위 프로세스에
+  `EARLGREY_NOTIFY_DISABLE=1`을 설정해야 합니다. RPC/SDK 등 UI 없는 메인도
+  기본적으로 알리지 않습니다. 구버전 Pi에 `ui_prompt_start`가 없으면 질문 알림은
+  지원되지 않으며, 완료 이벤트 호환 옵션과 별개입니다.
+
+이미 hook을 설치했다면 아래 명령을 다시 실행해 질문 알림 설정을 반영합니다.
+
+```sh
+python3 script/setup-agent-hooks.py
+```
 
 ## Neovim 사용법
 
@@ -94,16 +122,34 @@ OS 명령 성공은 실제 사용자가 보고 들었다는 증거는 아닙니�
   관련 도구를 설치할 수 있습니다. 데스크톱 알림 서비스와 오디오 세션이 필요합니다.
 - macOS: 기본 `osascript` 알림과 `afplay`의 Glass 소리를 사용합니다.
   알림 허용·집중 모드·음량 설정에 따라 실제 표시와 재생이 달라집니다.
-- WSL: Linux 데스크톱 알림 서비스와 오디오가 있을 때 위 Linux 방식을 사용합니다.
-  Windows 토스트로 전달하는 기능은 포함하지 않습니다.
+- WSLg: `zenity`의 일반 Wayland 창으로 표시합니다. 배너 서비스가 표시 상태를
+  보고해도 실제 화면에 보이지 않는 문제가 확인되어 이 경로를 우선합니다.
+  Windows 알림 센터에 쌓이는 네이티브 토스트는 아닙니다. 팝업은 15초 후 닫힙니다.
+  소리는 `paplay`와 WSLg의 `PulseServer`를 사용합니다.
 
 수동 실행 시 `--no-desktop`, `--no-sound`로 선택적으로 끌 수 있습니다.
 설치된 hook에도 같은 옵션을 추가할 수 있으나 재설치하면 기본값으로 돌아갑니다.
 
+Ubuntu/Debian에서는 관리자 권한 없이 도구와 한국어 폰트를 설치할 수 있습니다.
+
+```sh
+bash script/setup-notification-tools.sh
+```
+
+Ubuntu 저장소의 패키지를 `~/.local/opt/earlgrey-notify`에 추출하고
+`~/.local/bin`에 실행 래퍼를 만듭니다. 기존 실행 파일은 보존합니다.
+한국어 Nanum 폰트는 `~/.local/share/fonts/earlgrey-notify`에 설치합니다.
+WSLg에서는 Wayland 창을 사용하고, 일반 Linux에서는 기존 알림 서비스를
+사용하거나 사용자 systemd 서비스 `earlgrey-notifications`로 dunst를 시작합니다.
+공유 라이브러리가 부족하면 해당 항목을 보고하고 설치를 중단합니다.
+
+현재 WSLg 환경에서 사용자가 한글 팝업과 소리를 모두 확인했습니다.
+오디오 RDPSink 모니터에서도 실제 출력 파형을 확인했습니다.
+
 ## 검증
 
 ```sh
-PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -p 'test_agent_hooks.py'
+PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -p 'test_agent*.py'
 EARLGREY_NOTIFY_HEADLESS=1 nvim --headless '+luafile tests/test_notifications.lua' '+qa!'
 ```
 

@@ -16,6 +16,47 @@ class HookTests(unittest.TestCase):
         self.assertEqual(result, hooks.claude_config(result))
         self.assertEqual(json.loads(hooks.claude_config(result, True)), json.loads(source))
 
+    def test_claude_question_hooks_and_migration(self):
+        import json
+        source = {'hooks': {'Stop': [{'hooks': [
+            {'type': 'command', 'command': 'old # ' + hooks.MARKER},
+            {'type': 'command', 'command': 'keep-me'}]}]}}
+        result = json.loads(hooks.claude_config(json.dumps(source)))
+        self.assertEqual(result['hooks']['Stop'][0]['hooks'][0]['command'], 'keep-me')
+        self.assertEqual(result['hooks']['PreToolUse'][0]['matcher'], 'AskUserQuestion')
+        self.assertNotIn('idle_prompt', result['hooks']['Notification'][0]['matcher'])
+        self.assertNotIn('SubagentStop', result['hooks'])
+        self.assertIn('--event question', result['hooks']['Notification'][0]['hooks'][0]['command'])
+        removed = json.loads(hooks.claude_config(json.dumps(result), True))
+        self.assertEqual(removed['hooks'], {'Stop': [{'hooks': [{'type': 'command', 'command': 'keep-me'}]}]})
+
+    def test_pi_suppresses_headless_and_explicit_workers(self):
+        import shutil
+        import subprocess
+        if not shutil.which('node'):
+            self.skipTest('Node unavailable')
+        source = hooks.pi_extension('agent_settled').replace(
+            'import { spawn } from "node:child_process";',
+            'const calls = []; function spawn(...args) { calls.push(args); return {on(){}, stdin:{on(){}, end(){}}, unref(){}}; }')
+        source = source.replace('export default function (pi)', 'function install(pi)')
+        source += '''
+const handlers = {};
+install({on(name, handler) { handlers[name] = handler; }});
+const ctx = {hasUI: false, cwd: "/tmp", sessionManager: {getSessionId(){return "main";}}};
+handlers.agent_settled({}, ctx);
+handlers.ui_prompt_start({}, ctx);
+if (calls.length) throw new Error("headless worker notified");
+ctx.hasUI = true;
+process.env.EARLGREY_NOTIFY_DISABLE = "1";
+handlers.agent_settled({}, ctx);
+if (calls.length) throw new Error("disabled worker notified");
+delete process.env.EARLGREY_NOTIFY_DISABLE;
+handlers.agent_settled({}, ctx);
+handlers.ui_prompt_start({}, ctx);
+if (calls.length !== 2 || calls[0][1].at(-1) !== "complete" || calls[1][1].at(-1) !== "question") throw new Error("main events missing");
+'''
+        subprocess.run(['node', '--input-type=module', '-e', source], check=True, capture_output=True)
+
     def test_jcode_multiline_and_preservation(self):
         import tomllib
         source = '# keep comment\nmodel = "x"\n[hooks]\nturn_end = [\n "first",\n "second"\n]\nturn_start = "busy"\n[other]\nfoo = 42\n'
@@ -60,6 +101,7 @@ class HookTests(unittest.TestCase):
             env = dict(os.environ, HOME=folder, PATH=str(bin_dir))
             env.pop('CLAUDE_CONFIG_DIR', None)
             env.pop('PI_CODING_AGENT_DIR', None)
+            env.pop('JCODE_HOME', None)
             cmd = [sys.executable, str(Path(hooks.__file__))]
             subprocess.run(cmd + ['--dry-run'], env=env, check=True, capture_output=True)
             self.assertFalse((base / '.claude').exists())
