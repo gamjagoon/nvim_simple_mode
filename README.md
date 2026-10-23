@@ -35,8 +35,9 @@
 | 자연스러운 완성 | Blink 자동 완성 + LuaSnip 스니펫 |
 | Rust·Python 개발 | rustaceanvim, rust-analyzer, Pyright |
 | 읽기 좋은 Markdown | 제목·목록·표·코드 블록 렌더링 |
+| 에이전트 완료 알림 | nvim-notify 팝업·기록, 외부 터미널 hook 연결 |
 
-[설치](#설치) · [단축키](#단축키) · [검증](#검증)
+[설치](#설치) · [단축키](#단축키) · [검증](#검증) · [에이전트 알림 설정](docs/agent-notifications.md)
 
 ### 요구 사항
 

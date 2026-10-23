@@ -23,6 +23,18 @@ vim.g.maplocalleader = "\\"
 
 
 return require("lazy").setup({
+	{
+		"rcarriga/nvim-notify",
+		lazy = false,
+		priority = 900,
+		config = function()
+			local notify = require("notify")
+			notify.setup({ stages = "static", timeout = 5000, render = "wrapped-compact",
+				max_width = 60, background_colour = "#1a1b26" })
+			vim.notify = notify
+			require("agent_notifications").setup()
+		end,
+	},
 	-- UI/colorscheme
 	"folke/tokyonight.nvim",
 	{
