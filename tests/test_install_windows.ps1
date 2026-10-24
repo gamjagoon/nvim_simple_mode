@@ -22,7 +22,7 @@ function global:nvim.exe {
     }
 }
 function global:tree-sitter.exe { $global:NvimToolTestCalls++; $global:LASTEXITCODE = 0; if ($global:NvimVersionTestOld -eq 'tree-sitter') { 'tree-sitter 0.26.0' } else { 'tree-sitter 0.26.1' } }
-function global:fzf.exe { $global:NvimToolTestCalls++; $global:LASTEXITCODE = 0; if ($global:NvimVersionTestOld -eq 'fzf') { '0.35.0' } else { '0.44.1' } }
+function global:fzf.exe { $global:NvimToolTestCalls++; $global:LASTEXITCODE = 0; if ($global:NvimVersionTestOld -eq 'fzf') { '0.52.0' } else { '0.52.1' } }
 function global:rust-analyzer.exe {
     if ($env:RUSTUP_AUTO_INSTALL -ne '0') { throw 'Rust toolchain auto-install was not disabled' }
     $global:NvimToolTestCalls++; $global:LASTEXITCODE = 0
@@ -67,6 +67,12 @@ try {
         if (-not $rejected -or (Test-Path -LiteralPath $root)) { throw "Outdated $oldTool was not rejected before filesystem changes" }
     }
     $global:NvimVersionTestOld = ''
+    $fixtureProject = Join-Path $root 'fixture checkout'
+    New-Item -ItemType Directory -Force -Path (Join-Path $fixtureProject 'script'), (Join-Path $fixtureProject 'nvim') | Out-Null
+    Copy-Item -LiteralPath $installer -Destination (Join-Path $fixtureProject 'script/install-windows.ps1')
+    Copy-Item -LiteralPath (Join-Path $project 'script/check-tools-windows.ps1') -Destination (Join-Path $fixtureProject 'script/check-tools-windows.ps1')
+    Set-Content -LiteralPath (Join-Path $fixtureProject 'nvim/init.lua') -Value '-- fixture'
+    $installer = Join-Path $fixtureProject 'script/install-windows.ps1'
     $global:NvimInstallTestCalls.Clear()
     $config = Join-Path $env:XDG_CONFIG_HOME 'nvim'
     $data = Join-Path $env:XDG_DATA_HOME 'nvim-data'
@@ -84,7 +90,18 @@ try {
     if ($dataBackups.Count -ne 1 -or -not (Test-Path -LiteralPath (Join-Path $dataBackups[0].FullName 'sentinel'))) {
         throw 'Packer data backup lost its sentinel'
     }
-    if ($global:NvimInstallTestCalls.Count -ne 5) { throw 'Missing preflight/restore/parser/startup/search invocations' }
+    if ($global:NvimInstallTestCalls.Count -ne 6) { throw 'Missing preflight/plugins/parser/startup/search/compatibility invocations' }
+    if (-not ($global:NvimInstallTestCalls -match '\+Lazy! sync')) { throw 'Fresh configuration did not sync plugins' }
+    if (-not ($global:NvimInstallTestCalls -match '-u NONE')) { throw 'Plugin bootstrap loaded full init' }
+    if (-not ($global:NvimInstallTestCalls -match 'vim.go.loadplugins = true')) { throw 'Bootstrap disabled Lazy loading' }
+    if (-not ($global:NvimInstallTestCalls -match 'cquit 1')) { throw 'Bootstrap errors must fail installation' }
+    if (-not ($global:NvimInstallTestCalls -match 'test_compat.lua')) { throw 'Compatibility check missing' }
+    $localLock = '{"local-plugin":{"commit":"local-revision"}}'
+    [IO.File]::WriteAllText((Join-Path $config 'lazy-lock.json'), $localLock)
+    $global:NvimInstallTestCalls.Clear()
+    & $installer
+    if (-not ($global:NvimInstallTestCalls -match '\+Lazy! restore')) { throw 'Existing local lock was not restored' }
+    if ([IO.File]::ReadAllText((Join-Path $config 'lazy-lock.json')) -ne $localLock) { throw 'Local lock was lost during reinstall' }
     $global:NvimInstallTestCalls.Clear()
     $global:NvimInstallTestFailure = 'test_config.lua'
     $rejected = $false

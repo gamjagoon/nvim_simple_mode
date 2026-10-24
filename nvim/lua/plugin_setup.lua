@@ -96,4 +96,7 @@ require('gitsigns').setup {
   end
 }
 
-require 'hex'.setup()
+-- Hex editing is optional; opening normal files must work without xxd.
+if vim.fn.executable('xxd') == 1 then
+  require('hex').setup(require('compat').hex_options())
+end

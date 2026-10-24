@@ -156,3 +156,11 @@ EARLGREY_NOTIFY_HEADLESS=1 nvim --headless '+luafile tests/test_notifications.lu
 두 번째 검사는 외부 Python 프로세스 → inbox → 실제 nvim-notify 기록과
 끄기 동작을 확인합니다. 실제 에이전트 실행이나 OS 팝업·소리의 수신 검증을
 대신하지 않습니다. native Windows/macOS 동작은 별도 환경에서 확인해야 합니다.
+
+## Plugin installation
+
+`nvim-notify` is included in the project plugin specification. The configuration
+installer bootstraps plugins before loading the complete editor configuration.
+A fresh installation without `lazy-lock.json` uses `Lazy sync`; an existing local
+lockfile uses `Lazy restore`. The lockfile is generated locally and ignored by Git.
+Use `:Lazy sync` to install newly added plugins in an existing configuration.

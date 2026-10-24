@@ -142,14 +142,7 @@ require("nvim-tree").setup({
 	float = {
 		enable = true,
 		quit_on_focus_loss = true,
-		open_win_config = {
-			relative = "editor",
-			border = "rounded",
-			width = 100,
-			height = 50,
-			row = (vim.o.lines - 50) * 0.5,
-			col = (vim.o.columns - 100) * 0.5,
-		},
+		open_win_config = require('compat').tree_float_config,
 	},
   },
   renderer = {

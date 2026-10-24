@@ -73,7 +73,7 @@ Lua 언어 서버를 활성화하지 않습니다.
   PATH 설정과 설치 항목은 [Windows 수동 설치 안내](docs/windows-setup.md)를 참고하세요.
 
 필수 도구는 Git, curl, C 도구 모음, Neovim 0.12+, native tree-sitter CLI 0.26.1+,
-fd, rg, fzf 0.36+, Node/npm, Pyright, Rust 및 rust-analyzer/rustfmt입니다.
+fd, rg, fzf (Unix 0.36+ / Windows 0.52.1+), Node/npm, Pyright, Rust 및 rust-analyzer/rustfmt입니다.
 Linux는 X11/Wayland 클립보드 도구도 설치합니다. Unix의 사용자 도구 PATH는
 쉘 초기화 파일에서 불러옵니다. Windows에서는 도구 설치 시 PATH를 직접 등록하고
 새 터미널을 여세요. `check-tools-windows.ps1`로 실행 중인 도구와 공식 링크를
@@ -99,7 +99,8 @@ Windows 점검만 실행하려면 `check-tools-windows.ps1`을 사용하세요.
 Unix에서 도구 설치를 생략하려면 `--skip-tools`를 지정합니다.
 Neovim·tree-sitter는 실행 시 공식 최신 안정 릴리스를 조회하며, 설치된 버전이
 이보다 오래되면 갱신합니다. 다른 도구는 패키지 관리자가 제공하는 최신 버전을 사용합니다.
-최소 버전 검사는 유지하고 플러그인은 기존 lockfile로 복원합니다.
+최소 버전 검사는 유지합니다. 로컬 `lazy-lock.json`이 없으면 `Lazy sync`로 플러그인 설정이 허용하는 최신 버전을 설치하고, 있으면 해당 버전으로 복원합니다.
+lockfile은 로컬에서 생성하며 Git 추적에서 제외합니다.
 실제 변경 없이 명령을 확인하려면 Unix는 `--dry-run`, Windows는 `-WhatIf`를 사용합니다.
 
 Linux/macOS는 저장소의 `nvim/`을 `${XDG_CONFIG_HOME:-$HOME/.config}/nvim`에
@@ -118,9 +119,9 @@ Linux/macOS는 저장소의 `nvim/`을 `${XDG_CONFIG_HOME:-$HOME/.config}/nvim`�
 ### 플러그인 관리
 
 - `:Lazy`: 플러그인 관리자 열기
-- `:Lazy restore`: 커밋된 플러그인 버전 복구
-- `:Lazy update`: 플러그인과 lockfile 갱신. 공유할 버전이라면 lockfile 변경을
-  검토하고 커밋하세요.
+- `:Lazy restore`: 로컬 lockfile에 기록된 플러그인 버전 복구
+- `:Lazy sync`: 플러그인 설치·정리·갱신 및 로컬 lockfile 생성
+- `:Lazy update`: 플러그인과 로컬 lockfile 갱신. lockfile은 커밋하지 않습니다.
 - `:checkhealth`: 설치된 도구와 제공자 점검
 - Markdown 렌더링용 `markdown`, `markdown_inline` Treesitter 파서는 자동으로
   설치합니다. 다른 파서는 `:TSInstall rust python c cpp lua bash asm`처럼
@@ -222,6 +223,7 @@ bash tests/test_releases.sh
 # After setup and plugin restore, using Neovim 0.12 or newer:
 nvim --headless '+luafile tests/test_config.lua' +qa
 nvim --headless '+luafile tests/test_search.lua' +qa
+nvim --headless '+luafile tests/test_compat.lua' +qa
 ```
 
 설치 테스트는 임시 HOME/XDG 경로를 사용하므로 실제 설정을 교체하지 않습니다.
@@ -279,7 +281,7 @@ Clone the repository and run the installer for your OS:
   Follow the [Windows setup guide](docs/windows-setup.md) for PATH and component selection.
 
 Tools include Git, curl, a C toolchain, Neovim 0.12+, native tree-sitter CLI 0.26.1+,
-fd, rg, fzf 0.36+, Node/npm, Pyright, Rust, rust-analyzer, and rustfmt. Linux also
+fd, rg, fzf (Unix 0.36+ / Windows 0.52.1+), Node/npm, Pyright, Rust, rust-analyzer, and rustfmt. Linux also
 installs X11/Wayland clipboard tools. Unix shell startup files load the user tool
 PATH. On Windows, add tools to PATH manually and open a new terminal. Use
 `check-tools-windows.ps1` to inspect resolved tools and official links. Upgrade
@@ -306,7 +308,9 @@ Use `install-tools-linux.sh` or `install-tools-macos.sh` for tools alone, or
 `--skip-tools` on Unix to keep existing tools.
 Neovim and tree-sitter resolve the latest official stable release at runtime and
 upgrade older installations. Other tools use the latest versions offered by their
-package managers. Minimum compatibility checks remain; plugins use the lockfile. Preview commands without
+package managers. Minimum compatibility checks remain. Without a local `lazy-lock.json`,
+`Lazy sync` installs the latest versions allowed by plugin specifications; an existing
+lockfile restores its recorded versions. The generated lockfile is local and Git-ignored. Preview commands without
 changes with `--dry-run` on Unix or `-WhatIf` on Windows.
 
 Linux/macOS link `nvim/` to `${XDG_CONFIG_HOME:-$HOME/.config}/nvim`; keep the
@@ -324,9 +328,9 @@ automatically. Select a Nerd Font in your terminal separately for icon display.
 ### Plugin maintenance
 
 - `:Lazy` opens the plugin manager.
-- `:Lazy restore` restores the committed plugin versions.
-- `:Lazy update` updates plugins and the lockfile. Review and commit lockfile
-  changes if those versions should be shared.
+- `:Lazy restore` restores plugin versions recorded in your local lockfile.
+- `:Lazy sync` installs, cleans, and updates plugins and generates a local lockfile.
+- `:Lazy update` updates plugins and the local lockfile. Do not commit the lockfile.
 - `:checkhealth` checks installed tools and providers.
 - The `markdown` and `markdown_inline` Treesitter parsers are installed for
   Markdown rendering. Other parsers are installed explicitly, for example
@@ -432,6 +436,7 @@ bash tests/test_releases.sh
 # After setup and plugin restore, using Neovim 0.12 or newer:
 nvim --headless '+luafile tests/test_config.lua' +qa
 nvim --headless '+luafile tests/test_search.lua' +qa
+nvim --headless '+luafile tests/test_compat.lua' +qa
 ```
 
 Installer tests use temporary HOME/XDG paths and do not replace your settings.
@@ -486,7 +491,7 @@ Windows は[公式リンクの案内](docs/windows-setup.md)から手動で導�
   PATH と導入項目は [Windows 手動セットアップ](docs/windows-setup.md)を参照してください。
 
 Git、curl、C ツールチェーン、Neovim 0.12+、ネイティブ tree-sitter CLI 0.26.1+、
-fd、rg、fzf 0.36+、Node/npm、Pyright、Rust、rust-analyzer、rustfmt を導入します。
+fd、rg、fzf (Unix 0.36+ / Windows 0.52.1+)、Node/npm、Pyright、Rust、rust-analyzer、rustfmt を導入します。
 Linux は X11/Wayland のクリップボードツールも導入します。Unix はシェルの
 初期化ファイルを更新します。Windows は PATH を手動で設定してから新しい
 ターミナルを開き、`check-tools-windows.ps1` でツールと公式リンクを確認します。
@@ -513,7 +518,9 @@ Windows の確認のみは `check-tools-windows.ps1` を使用します。
 ツール導入省略は `--skip-tools` を指定します。
 Neovim と tree-sitter は実行時に公式の最新安定リリースを取得し、古い導入を更新します。
 その他のツールはパッケージマネージャーが提供する最新版を使用します。
-最低バージョンの確認は維持し、プラグインはロックファイルから復元します。
+最低バージョンの確認は維持します。ローカルの `lazy-lock.json` がなければ
+`Lazy sync` でプラグイン設定が許可する最新版を導入し、あれば記録されたバージョンを復元します。
+生成されるロックファイルはローカル専用で、Git の追跡対象外です。
 変更せずに確認するには Unix は `--dry-run`、Windows は `-WhatIf` を指定します。
 
 Linux/macOS は `nvim/` を `${XDG_CONFIG_HOME:-$HOME/.config}/nvim` にリンクするため、
@@ -531,9 +538,9 @@ Linux/macOS は `nvim/` を `${XDG_CONFIG_HOME:-$HOME/.config}/nvim` にリン�
 ### プラグインの管理
 
 - `:Lazy` でプラグインマネージャーを開きます。
-- `:Lazy restore` でコミット済みのプラグインバージョンを復元します。
-- `:Lazy update` でプラグインとロックファイルを更新します。
-  更新後のバージョンを共有する場合は、ロックファイルの変更を確認してコミットしてください。
+- `:Lazy restore` でローカルのロックファイルに記録されたバージョンを復元します。
+- `:Lazy sync` でプラグインの導入・整理・更新とローカルのロックファイル生成を行います。
+- `:Lazy update` でプラグインとローカルのロックファイルを更新します。コミットは不要です。
 - `:checkhealth` でインストール済みのツールとプロバイダーを確認します。
 - Markdown の描画用に `markdown` と `markdown_inline` の Treesitter パーサーをインストールします。
   それ以外のパーサーは、`:TSInstall rust python c cpp lua bash asm` などで明示的にインストールしてください。
@@ -631,6 +638,7 @@ bash tests/test_releases.sh
 # After setup and plugin restore, using Neovim 0.12 or newer:
 nvim --headless '+luafile tests/test_config.lua' +qa
 nvim --headless '+luafile tests/test_search.lua' +qa
+nvim --headless '+luafile tests/test_compat.lua' +qa
 ```
 
 インストーラーのテストは一時的な HOME/XDG パスを使用するため、既存の設定を置き換えません。

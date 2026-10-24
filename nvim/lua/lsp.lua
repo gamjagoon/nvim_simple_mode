@@ -32,6 +32,7 @@ vim.api.nvim_create_autocmd('LspAttach', {
   end,
 })
 
+vim.lsp.config('pyright', { cmd = require('compat').pyright_command() })
 vim.lsp.enable('pyright')
 
 -- LSP Diagnostics Options Setup 

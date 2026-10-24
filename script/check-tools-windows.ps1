@@ -20,7 +20,7 @@ $tools = @(
     @{ Command = 'curl.exe'; Minimum = ''; Url = 'https://curl.se/windows/' }
     @{ Command = 'fd.exe'; Minimum = ''; Url = 'https://github.com/sharkdp/fd/releases/latest' }
     @{ Command = 'rg.exe'; Minimum = ''; Url = 'https://github.com/BurntSushi/ripgrep/releases/latest' }
-    @{ Command = 'fzf.exe'; Minimum = '0.36.0'; Url = 'https://github.com/junegunn/fzf/releases/latest' }
+    @{ Command = 'fzf.exe'; Minimum = '0.52.1'; Url = 'https://github.com/junegunn/fzf/releases/latest' }
     @{ Command = 'tree-sitter.exe'; Minimum = '0.26.1'; Url = 'https://github.com/tree-sitter/tree-sitter/releases/latest' }
     @{ Command = 'clang.exe'; Minimum = ''; Url = 'https://github.com/llvm/llvm-project/releases/latest' }
     @{ Command = 'node.exe'; Minimum = ''; Url = 'https://nodejs.org/en/download' }

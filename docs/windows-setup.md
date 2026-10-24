@@ -54,5 +54,29 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\script\install-windows.ps1
 
 도구 링크만 확인하려면 점검기에 `-WhatIf`를 붙입니다.
 설정 설치기에 `-WhatIf`를 붙이면 설정 복사와 플러그인 설치 계획만 확인합니다.
-최소 지원 버전(Neovim 0.12, tree-sitter 0.26.1, fzf 0.36)은 호환성 검사에만 사용하며
+최소 지원 버전(Neovim 0.12, tree-sitter 0.26.1, fzf 0.52.1)은 호환성 검사에만 사용하며
 다운로드 버전을 고정하지 않습니다. 설정 설치기는 도구 업데이트를 대신 수행하지 않습니다.
+
+플러그인 lockfile(`lazy-lock.json`)은 Git에서 제외되는 로컬 파일입니다.
+처음 설치할 때 lockfile이 없으면 `Lazy sync`로 플러그인 설정이 허용하는 최신 버전을
+설치합니다. 로컬 lockfile이 있으면 `Lazy restore`로 기록된 버전을 복원합니다.
+재설치 시 저장소에 lockfile이 없으면 기존 설치의 lockfile을 새 설정에 보존합니다.
+플러그인 부트스트랩은 `-u NONE`으로 전체 설정을 불러오지 않고 수행하며,
+설치가 끝난 뒤 일반 설정으로 파서 설치와 시작 검사를 실행합니다.
+
+## Windows 전용 설정
+
+- Pyright의 npm `.cmd` 런처는 `cmd.exe /d /c`로 실행합니다. 자동 실행 레지스트리를
+  건너뛰고, Node/npm과 `pyright-langserver.cmd`가 PATH에 있어야 합니다.
+- fzf는 Windows 이스케이프 문제가 수정된 **0.52.1 이상**을 요구합니다.
+  검색용 셸과 경로 처리는 fzf-lua의 Windows 지원을 사용합니다.
+- `xxd`가 없으면 선택 기능인 Hex 편집만 초기화하지 않습니다. 일반 텍스트 편집에는
+  영향이 없습니다. Windows에서는 비UTF-8 인코딩만으로 파일을 Hex로 전환하지 않습니다.
+- 파일 트리 팝업은 현재 터미널 크기에 맞춥니다. 작은 창에서 음수 좌표나 고정 크기를
+  넘기는 문제를 방지합니다.
+- 한국어 파일 인코딩이 CP949라면 `:edit ++enc=cp949`로 명시해서 여세요.
+  이 설정은 기존 파일의 줄바꿈이나 인코딩을 강제로 변환하지 않습니다.
+
+Linux에서 Windows 분기를 모의 검사한 결과는 native Windows 실행 증거가 아닙니다.
+Windows에서는 설치 후 `tests/test_config.lua`, `tests/test_search.lua`, `tests/test_compat.lua`와
+`tests/test_install_windows.ps1`을 실행해 실제 환경을 확인합니다.

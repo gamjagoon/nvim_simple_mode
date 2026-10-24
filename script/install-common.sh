@@ -10,7 +10,7 @@ export PATH="$HOME/.local/bin:${CARGO_HOME:-$HOME/.cargo}/bin:$PATH"
 
 install_usage() {
     printf 'Usage: bash %s [--dry-run] [--skip-tools] [--help]\n' "${0##*/}"
-    printf '%s\n' 'Installs required tools, backs up and links configuration, restores plugins and checks startup.'
+    printf '%s\n' 'Installs required tools, backs up and links configuration, installs/restores plugins and checks startup.'
     printf '%s\n' '--dry-run prints the operations without changing files or installing packages.'
     printf '%s\n' '--skip-tools uses existing tools (full installers only); versions are still checked.'
 }
@@ -246,15 +246,20 @@ install_config_and_plugins() {
     install_run bash "$INSTALL_SCRIPT_DIR/setup_init_file.sh"
     # Keep tests in separate processes: each starts from a fresh editor state.
     if "$INSTALL_DRY_RUN"; then
-        printf '%s\n' 'Restore locked plugins, await Markdown parser installation, then run both startup and search tests.'
+        printf '%s\n' 'Sync plugins without a local lockfile, otherwise restore local locked versions; await Markdown parsers and run startup/search/compatibility tests.'
         return
     fi
     (
         cd "$INSTALL_REPO_ROOT"
-        nvim --headless '+Lazy! restore' '+qa!'
+        local plugin_action=sync
+        if [[ -f "$INSTALL_REPO_ROOT/nvim/lazy-lock.json" ]]; then plugin_action=restore; fi
+        printf 'Plugin setup: Lazy %s (local lockfile selects restore).\n' "$plugin_action"
+        # Load only the plugin declarations until missing plugins have been installed.
+        nvim --headless -u NONE "+lua vim.go.loadplugins = true; vim.opt.rtp:prepend(vim.fn.stdpath('config')); require('plugins')" "+Lazy! $plugin_action" '+lua if vim.v.errmsg ~= "" then vim.cmd("cquit 1") end' '+qa!'
         nvim --headless '+lua require("nvim-treesitter").install({"markdown", "markdown_inline"}):wait(300000)' '+qa!'
         nvim --headless '+luafile tests/test_config.lua' '+qa!'
         nvim --headless '+luafile tests/test_search.lua' '+qa!'
+        nvim --headless '+luafile tests/test_compat.lua' '+qa!'
     )
     printf '%s\n' 'Installation and startup checks complete. Open a new terminal, then run nvim.'
 }
