@@ -2,3 +2,6 @@
 /.agents/
 /.serena/
 /.specify/
+
+# Local lazy.nvim plugin lockfile
+/nvim/lazy-lock.json
