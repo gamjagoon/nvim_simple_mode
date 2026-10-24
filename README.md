@@ -68,15 +68,15 @@ Lua 언어 서버를 활성화하지 않습니다.
 - macOS: Apple Silicon 또는 기존 Homebrew가 있는 Intel Mac. Command Line Tools
   설치 창이 열리면 설치를 완료한 뒤 다시 실행하세요. 새 Homebrew 자동 설치는
   Apple Silicon을 지원합니다.
-- Windows: Windows 10/11 x64, PowerShell 5.1+. 먼저
-  [아래 공식 다운로드 링크](#windows-downloads)에서 도구를 설치하세요.
-  PATH 설정과 설치 항목은 [Windows 수동 설치 안내](docs/windows-setup.md)를 참고하세요.
+- Windows: Windows 10/11 x64, PowerShell 5.1+. WinGet 자동 설치 또는
+  [공식 다운로드 링크](#windows-downloads)를 통한 수동 설치를 지원합니다.
+  자세한 항목은 [Windows 설치 안내](docs/windows-setup.md)를 참고하세요.
 
 필수 도구는 Git, curl, C 도구 모음, Neovim 0.12+, native tree-sitter CLI 0.26.1+,
 fd, rg, fzf (Unix 0.36+ / Windows 0.52.1+), Node/npm, Pyright, Rust 및 rust-analyzer/rustfmt입니다.
 Linux는 X11/Wayland 클립보드 도구도 설치합니다. Unix의 사용자 도구 PATH는
-쉘 초기화 파일에서 불러옵니다. Windows에서는 도구 설치 시 PATH를 직접 등록하고
-새 터미널을 여세요. `check-tools-windows.ps1`로 실행 중인 도구와 공식 링크를
+쉘 초기화 파일에서 불러옵니다. Windows 자동 설치기는 현재 프로세스의 PATH를 갱신합니다.
+수동 설치 시에는 도구 경로를 등록한 뒤 새 터미널을 여세요. `check-tools-windows.ps1`로 실행 중인 도구와 공식 링크를
 확인할 수 있습니다. 시스템 PATH의 오래된 도구가 먼저 실행된다면 해당 설치를 갱신하세요.
 
 ```sh
@@ -87,13 +87,14 @@ bash script/install-macos.sh
 ```
 
 ```powershell
-# Windows PowerShell: install tools from official links first, then check and set up
-powershell -NoProfile -ExecutionPolicy Bypass -File .\script\check-tools-windows.ps1
-powershell -NoProfile -ExecutionPolicy Bypass -File .\script\install-windows.ps1
+# Windows PowerShell: install prerequisites with winget, then configure Neovim
+powershell -NoProfile -ExecutionPolicy Bypass -File .\script\install-windows.ps1 -InstallTools
+# Tools only / 도구만 설치 / ツールのみ:
+# powershell -NoProfile -ExecutionPolicy Bypass -File .\script\install-tools-windows.ps1
 ```
 
 Linux/macOS는 도구 설치 → 설정 백업/연결 → 플러그인 복원 → 파서 설치 →
-시작·검색 검사를 수행합니다. Windows는 도구 점검 후 설정 백업/복사부터 수행합니다.
+시작·검색 검사를 수행합니다. Windows는 `-InstallTools`로 winget 도구 설치를 함께 수행하며, 옵션을 생략하면 기존 도구를 점검한 뒤 설정을 백업/복사합니다.
 Windows 점검만 실행하려면 `check-tools-windows.ps1`을 사용하세요.
 도구만 설치하려면 `install-tools-linux.sh`, `install-tools-macos.sh`를 사용합니다.
 Unix에서 도구 설치를 생략하려면 `--skip-tools`를 지정합니다.
@@ -213,6 +214,7 @@ Windows 설치기 백업·실패 처리 검사는 별도 PowerShell 세션에서
 
 ```powershell
 powershell -NoProfile -File tests/test_install_windows.ps1
+powershell -NoProfile -File tests/test_install_tools_windows.ps1
 ```
 
 
@@ -276,14 +278,15 @@ Clone the repository and run the installer for your OS:
 - macOS: Apple Silicon, or Intel with an existing working Homebrew installation.
   Complete Apple's Command Line Tools dialog and rerun if prompted. Automatic
   Homebrew bootstrap supports Apple Silicon.
-- Windows: Windows 10/11 x64, PowerShell 5.1+. Install tools manually from the
-  [official download links below](#windows-downloads) first.
+- Windows: Windows 10/11 x64, PowerShell 5.1+. Use WinGet automation or the
+  [official download links below](#windows-downloads) for manual installation.
   Follow the [Windows setup guide](docs/windows-setup.md) for PATH and component selection.
 
 Tools include Git, curl, a C toolchain, Neovim 0.12+, native tree-sitter CLI 0.26.1+,
 fd, rg, fzf (Unix 0.36+ / Windows 0.52.1+), Node/npm, Pyright, Rust, rust-analyzer, and rustfmt. Linux also
 installs X11/Wayland clipboard tools. Unix shell startup files load the user tool
-PATH. On Windows, add tools to PATH manually and open a new terminal. Use
+PATH. Windows automation refreshes the current process PATH; manual installations
+require registering tool paths and opening a new terminal. Use
 `check-tools-windows.ps1` to inspect resolved tools and official links. Upgrade
 older system tools if Machine PATH selects them first.
 
@@ -295,14 +298,15 @@ bash script/install-macos.sh
 ```
 
 ```powershell
-# Windows PowerShell: install tools from official links first, then check and set up
-powershell -NoProfile -ExecutionPolicy Bypass -File .\script\check-tools-windows.ps1
-powershell -NoProfile -ExecutionPolicy Bypass -File .\script\install-windows.ps1
+# Windows PowerShell: install prerequisites with winget, then configure Neovim
+powershell -NoProfile -ExecutionPolicy Bypass -File .\script\install-windows.ps1 -InstallTools
+# Tools only / 도구만 설치 / ツールのみ:
+# powershell -NoProfile -ExecutionPolicy Bypass -File .\script\install-tools-windows.ps1
 ```
 
 Linux/macOS installers install tools, back up/link configuration, restore plugins,
-install parsers, and run startup/search checks. Windows checks manually installed
-tools before backing up/copying configuration and restoring plugins.
+install parsers, and run startup/search checks. Windows installs prerequisites with winget when `-InstallTools` is supplied; otherwise it
+checks existing tools before backing up/copying configuration and installing plugins.
 Use `check-tools-windows.ps1` to inspect Windows prerequisites only.
 Use `install-tools-linux.sh` or `install-tools-macos.sh` for tools alone, or
 `--skip-tools` on Unix to keep existing tools.
@@ -426,6 +430,7 @@ mocked; this does not validate native Windows tool installation.
 
 ```powershell
 powershell -NoProfile -File tests/test_install_windows.ps1
+powershell -NoProfile -File tests/test_install_tools_windows.ps1
 ```
 
 
@@ -486,15 +491,15 @@ Windows は[公式リンクの案内](docs/windows-setup.md)から手動で導�
 - macOS：Apple Silicon、または既存の Homebrew が動作する Intel Mac。
   Command Line Tools のダイアログが開いた場合は導入後に再実行してください。
   Homebrew の自動導入は Apple Silicon に対応します。
-- Windows：Windows 10/11 x64、PowerShell 5.1+。最初に
-  [下記の公式ダウンロードリンク](#windows-downloads)からツールを手動で導入します。
-  PATH と導入項目は [Windows 手動セットアップ](docs/windows-setup.md)を参照してください。
+- Windows：Windows 10/11 x64、PowerShell 5.1+。WinGet による自動導入、または
+  [公式ダウンロードリンク](#windows-downloads)からの手動導入を利用できます。
+  詳細は [Windows セットアップ](docs/windows-setup.md)を参照してください。
 
 Git、curl、C ツールチェーン、Neovim 0.12+、ネイティブ tree-sitter CLI 0.26.1+、
 fd、rg、fzf (Unix 0.36+ / Windows 0.52.1+)、Node/npm、Pyright、Rust、rust-analyzer、rustfmt を導入します。
 Linux は X11/Wayland のクリップボードツールも導入します。Unix はシェルの
-初期化ファイルを更新します。Windows は PATH を手動で設定してから新しい
-ターミナルを開き、`check-tools-windows.ps1` でツールと公式リンクを確認します。
+初期化ファイルを更新します。Windows の自動導入は現在の PATH を更新します。
+手動導入では PATH を設定してから新しいターミナルを開き、`check-tools-windows.ps1` でツールと公式リンクを確認します。
 古いシステムのツールが先に選択される場合は、そのインストールを更新してください。
 
 ```sh
@@ -505,14 +510,15 @@ bash script/install-macos.sh
 ```
 
 ```powershell
-# Windows PowerShell: install tools from official links first, then check and set up
-powershell -NoProfile -ExecutionPolicy Bypass -File .\script\check-tools-windows.ps1
-powershell -NoProfile -ExecutionPolicy Bypass -File .\script\install-windows.ps1
+# Windows PowerShell: install prerequisites with winget, then configure Neovim
+powershell -NoProfile -ExecutionPolicy Bypass -File .\script\install-windows.ps1 -InstallTools
+# Tools only / 도구만 설치 / ツールのみ:
+# powershell -NoProfile -ExecutionPolicy Bypass -File .\script\install-tools-windows.ps1
 ```
 
 Linux/macOS はツール導入、設定のバックアップとリンク、プラグイン復元、
-パーサー導入、起動・検索テストを実行します。Windows は手動導入済みのツールを
-確認してから、設定のバックアップ／コピーとプラグイン導入を実行します。
+パーサー導入、起動・検索テストを実行します。Windows は `-InstallTools` で
+WinGet によるツール導入も行い、省略時は既存ツールを確認して設定を導入します。
 Windows の確認のみは `check-tools-windows.ps1` を使用します。
 ツールのみは `install-tools-linux.sh`、`install-tools-macos.sh`、Unix での
 ツール導入省略は `--skip-tools` を指定します。
@@ -628,6 +634,7 @@ Windows のバックアップ・失敗処理テストは、新しい PowerShell 
 
 ```powershell
 powershell -NoProfile -File tests/test_install_windows.ps1
+powershell -NoProfile -File tests/test_install_tools_windows.ps1
 ```
 
 
@@ -651,8 +658,8 @@ Neovim のテストでは、プラグインの読み込み、補完機能、複�
 
 ## Windows 다운로드 / Downloads / ダウンロード
 
-Windows x64용 최신 안정 릴리스를 직접 설치합니다. Download the latest stable
-Windows x64 releases manually. Windows x64 の最新安定リリースを手動で導入します。
+WinGet 대신 수동 설치할 때 사용하는 공식 링크입니다. Official links for manual
+installation as an alternative to WinGet. WinGet を使わない手動導入用の公式リンクです。
 자세한 설치 항목·PATH 설정 / component and PATH instructions / 詳細な設定：
 [Windows setup guide](docs/windows-setup.md).
 

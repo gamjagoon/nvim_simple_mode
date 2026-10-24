@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-Checks manually installed tools, copies the Neovim configuration, installs plugins, and runs checks.
+Optionally installs tools with WinGet, checks prerequisites, copies the Neovim configuration, installs plugins, and runs checks.
 .DESCRIPTION
 Native Windows x64. Existing configuration is moved to a timestamped backup.
 The copied configuration does not require symlink privileges or this checkout to
@@ -11,7 +11,7 @@ powershell -ExecutionPolicy Bypass -File script/install-windows.ps1
 powershell -ExecutionPolicy Bypass -File script/install-windows.ps1 -WhatIf
 #>
 [CmdletBinding(SupportsShouldProcess = $true)]
-param([switch]$Help)
+param([switch]$Help, [switch]$InstallTools)
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version 2.0
 if ($Help) { Get-Help $PSCommandPath -Detailed; return }
@@ -38,6 +38,9 @@ function Backup-Path([string]$Path) {
     }
 }
 
+if ($InstallTools) {
+    & (Join-Path $PSScriptRoot 'install-tools-windows.ps1') -WhatIf:$WhatIfPreference
+}
 & (Join-Path $PSScriptRoot 'check-tools-windows.ps1') -WhatIf:$WhatIfPreference
 if ($PSCmdlet.ShouldProcess($config, 'Back up existing config and copy repository configuration')) {
     $sourceFull = [IO.Path]::GetFullPath($sourceConfig).Replace('/', '\').TrimEnd('\')

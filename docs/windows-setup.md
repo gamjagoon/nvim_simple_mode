@@ -1,10 +1,63 @@
-# earlgrey.nvim · Windows 수동 도구 설치
+# earlgrey.nvim · Windows 설치
 
 [← earlgrey.nvim README](../README.md#windows-downloads)
 
 Windows 10/11 x64, PowerShell 5.1 이상을 대상으로 합니다. WSL에서는 Linux 설치기를 사용하세요.
-아래 공식 페이지에서 **최신 안정 릴리스**를 직접 설치한 뒤, Neovim 설정 설치기를 실행합니다.
-Windows 스크립트는 도구 다운로드·설치나 PATH 변경을 수행하지 않습니다.
+WinGet으로 필수 도구를 설치하거나, 아래 공식 페이지에서 직접 설치할 수 있습니다.
+`check-tools-windows.ps1`은 읽기 전용이며 `install-windows.ps1`은 기본적으로
+기존 도구를 사용합니다. `-InstallTools`를 지정하면 WinGet 도구 설치도 실행합니다.
+
+## WinGet 자동 설치
+
+Windows의 [App Installer / WinGet](https://learn.microsoft.com/windows/package-manager/winget/)가
+필요합니다. 저장소 루트에서 PowerShell로 실행합니다.
+
+```powershell
+# 도구 + 설정 + 플러그인/파서 + 검증
+powershell -NoProfile -ExecutionPolicy Bypass -File .\script\install-windows.ps1 -InstallTools
+# 도구만 설치
+powershell -NoProfile -ExecutionPolicy Bypass -File .\script\install-tools-windows.ps1
+# 실제 설치 없이 계획 확인
+powershell -NoProfile -ExecutionPolicy Bypass -File .\script\install-windows.ps1 -InstallTools -WhatIf
+# C++ Build Tools/SDK가 이미 준비된 경우에만 생략
+powershell -NoProfile -ExecutionPolicy Bypass -File .\script\install-tools-windows.ps1 -SkipBuildTools
+```
+
+`winget` 소스에서 정확한 ID로 최신 제공 버전을 설치·갱신하며 패키지/소스 약관에
+자동 동의합니다. 일부 설치기는 UAC 승인을 요청하며, Build Tools와 SDK는 큰 다운로드입니다.
+재부팅을 자동으로 실행하지 않습니다. 재부팅이 필요한 상태는 오류로 보고하므로,
+Windows 재부팅이 필요하면 마친 뒤 다시 실행합니다.
+
+| 도구 | winget ID |
+| --- | --- |
+| Neovim | `Neovim.Neovim` |
+| Git | `Git.Git` |
+| curl | `cURL.cURL` |
+| fd | `sharkdp.fd` |
+| ripgrep | `BurntSushi.ripgrep.MSVC` |
+| fzf | `junegunn.fzf` |
+| tree-sitter CLI | `tree-sitter.tree-sitter-cli` |
+| Node.js LTS/npm | `OpenJS.NodeJS.LTS` |
+| Rustup | `Rustlang.Rustup` |
+| LLVM/Clang | `LLVM.LLVM` |
+| C++ Build Tools | `Microsoft.VisualStudio.2022.BuildTools` |
+
+ID는 [공식 winget 패키지 저장소](https://github.com/microsoft/winget-pkgs)에서 확인했습니다.
+WinGet 인덱스 반영 시점에 따라 제공 버전은 달라질 수 있습니다.
+설치 후 현재 프로세스의 PATH에 설치기가 등록한 경로와 Rust/npm/WinGet/LLVM 경로를 반영합니다.
+도구만 별도의 `powershell -File` 프로세스에서 설치했다면 다음 작업은 새 터미널에서 실행하세요.
+`-InstallTools` 통합 설치는 같은 프로세스에서 갱신된 PATH를 사용합니다.
+사용자가 저장한 PATH를 스크립트에서 덮어쓰지 않습니다. 패키지 설치기는 자체 PATH를 등록할 수 있습니다.
+Rust stable을 갱신하고 활성 툴체인에 `rust-analyzer`·`rustfmt`를 추가합니다.
+활성 툴체인이 없을 때만 stable을 기본값으로 지정합니다. Pyright는 npm으로 설치합니다.
+
+기존 Visual Studio는 WinGet 갱신만으로 C++ 워크로드가 추가되지 않습니다.
+스크립트는 `vswhere`로 C++ 컴포넌트를 확인하고 없으면 Visual Studio Installer의
+`modify` 명령으로 VCTools와 권장 SDK를 추가한 뒤 다시 확인합니다.
+[Microsoft의 설치·워크로드 변경 안내](https://learn.microsoft.com/visualstudio/install/use-command-line-parameters-to-install-visual-studio?view=vs-2022)를 따릅니다.
+최종 도구/최소 버전 검사가 실패하면 설정 설치로 진행하지 않습니다.
+
+## 수동 설치 대안
 
 | 도구 | 공식 다운로드/설치 안내 | 선택할 항목 |
 | --- | --- | --- |
@@ -55,7 +108,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\script\install-windows.ps1
 도구 링크만 확인하려면 점검기에 `-WhatIf`를 붙입니다.
 설정 설치기에 `-WhatIf`를 붙이면 설정 복사와 플러그인 설치 계획만 확인합니다.
 최소 지원 버전(Neovim 0.12, tree-sitter 0.26.1, fzf 0.52.1)은 호환성 검사에만 사용하며
-다운로드 버전을 고정하지 않습니다. 설정 설치기는 도구 업데이트를 대신 수행하지 않습니다.
+다운로드 버전을 고정하지 않습니다. `-InstallTools`를 생략한 설정 설치기는 도구 업데이트를 수행하지 않습니다.
 
 플러그인 lockfile(`lazy-lock.json`)은 Git에서 제외되는 로컬 파일입니다.
 처음 설치할 때 lockfile이 없으면 `Lazy sync`로 플러그인 설정이 허용하는 최신 버전을
@@ -80,3 +133,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\script\install-windows.ps1
 Linux에서 Windows 분기를 모의 검사한 결과는 native Windows 실행 증거가 아닙니다.
 Windows에서는 설치 후 `tests/test_config.lua`, `tests/test_search.lua`, `tests/test_compat.lua`와
 `tests/test_install_windows.ps1`을 실행해 실제 환경을 확인합니다.
+
+## 스크립트 검증 범위
+
+Linux의 PowerShell 7에서 winget/rustup/npm/VS 설치기를 대체한 모의 검사를 실행합니다.
+`-WhatIf`, 호출 인자, 재실행, 오류 중단, C++ 워크로드 보완을 검사하며 실제 Windows
+패키지 설치·UAC·SDK 동작을 입증하지 않습니다. PowerShell 5.1과 native Windows 설치는 별도 검증이 필요합니다.

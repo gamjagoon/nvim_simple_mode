@@ -49,6 +49,7 @@ try {
     $env:RUSTUP_AUTO_INSTALL = '1'
     $installer = Join-Path $project 'script/install-windows.ps1'
     & $installer -WhatIf
+    & $installer -InstallTools -WhatIf
     if (Test-Path -LiteralPath $root) { throw 'WhatIf changed the filesystem' }
     if ($global:NvimToolTestCalls -ne 0) { throw 'WhatIf executed a tool' }
     if ($env:PATH -ne $savedEnv['PATH']) { throw 'WhatIf changed PATH' }
