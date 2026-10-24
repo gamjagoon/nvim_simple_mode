@@ -41,6 +41,10 @@ function Backup-Path([string]$Path) {
 if ($InstallTools) {
     & (Join-Path $PSScriptRoot 'install-tools-windows.ps1') -WhatIf:$WhatIfPreference
 }
+if ($PSCmdlet.ShouldProcess('LLVM-MinGW UCRT', 'Initialize compiler environment')) {
+    . (Join-Path $PSScriptRoot 'windows-compiler.ps1')
+    Initialize-WindowsCompiler
+}
 & (Join-Path $PSScriptRoot 'check-tools-windows.ps1') -WhatIf:$WhatIfPreference
 if ($PSCmdlet.ShouldProcess($config, 'Back up existing config and copy repository configuration')) {
     $sourceFull = [IO.Path]::GetFullPath($sourceConfig).Replace('/', '\').TrimEnd('\')

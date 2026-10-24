@@ -2,9 +2,10 @@
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version 2.0
 $project = Split-Path -Parent $PSScriptRoot
+$fixtureRoot = Join-Path ([IO.Path]::GetTempPath()) ('nvim fixture ' + [guid]::NewGuid().ToString('N'))
 $root = Join-Path ([IO.Path]::GetTempPath()) ('nvim install test ' + [guid]::NewGuid().ToString('N'))
 $savedEnv = @{}
-foreach ($name in @('OS', 'LOCALAPPDATA', 'XDG_CONFIG_HOME', 'XDG_DATA_HOME', 'NVIM_APPNAME', 'PATH', 'RUSTUP_AUTO_INSTALL')) {
+foreach ($name in @('OS', 'LOCALAPPDATA', 'XDG_CONFIG_HOME', 'XDG_DATA_HOME', 'NVIM_APPNAME', 'PATH', 'RUSTUP_AUTO_INSTALL', 'CC', 'CXX', 'INCLUDE', 'LIB')) {
     $savedEnv[$name] = [Environment]::GetEnvironmentVariable($name, 'Process')
 }
 $global:NvimInstallTestCalls = New-Object 'System.Collections.Generic.List[string]'
@@ -37,7 +38,9 @@ function global:git.exe { $global:NvimToolTestCalls++; $global:LASTEXITCODE = 0 
 function global:curl.exe { $global:NvimToolTestCalls++; $global:LASTEXITCODE = 0 }
 function global:fd.exe { $global:NvimToolTestCalls++; $global:LASTEXITCODE = 0 }
 function global:rg.exe { $global:NvimToolTestCalls++; $global:LASTEXITCODE = 0 }
-function global:clang.exe { $global:NvimToolTestCalls++; $global:LASTEXITCODE = 0 }
+function global:cargo.exe { $global:LASTEXITCODE = 0 }
+function global:rustc.exe { $global:LASTEXITCODE = 0; 'host: x86_64-pc-windows-gnullvm' }
+function global:rustup.exe { $global:LASTEXITCODE = 0; 'stable-x86_64-pc-windows-gnullvm' }
 function global:node.exe { $global:NvimToolTestCalls++; $global:LASTEXITCODE = 0; 'v24.0.0' }
 function global:npm.cmd { $global:NvimToolTestCalls++; $global:LASTEXITCODE = 0; '11.0.0' }
 try {
@@ -47,7 +50,16 @@ try {
     $env:XDG_DATA_HOME = Join-Path $root 'data root'
     $env:NVIM_APPNAME = $null
     $env:RUSTUP_AUTO_INSTALL = '1'
-    $installer = Join-Path $project 'script/install-windows.ps1'
+    $env:INCLUDE = $null
+    $env:LIB = $null
+    New-Item -ItemType Directory -Force -Path (Join-Path $fixtureRoot 'script'), (Join-Path $fixtureRoot 'nvim') | Out-Null
+    Copy-Item (Join-Path $project 'script/install-windows.ps1') (Join-Path $fixtureRoot 'script/install-windows.ps1')
+    Copy-Item (Join-Path $project 'script/install-tools-windows.ps1') (Join-Path $fixtureRoot 'script/install-tools-windows.ps1')
+    Copy-Item (Join-Path $project 'script/check-tools-windows.ps1') (Join-Path $fixtureRoot 'script/check-tools-windows.ps1')
+    Set-Content (Join-Path $fixtureRoot 'nvim/init.lua') '-- fixture'
+    $helper = 'function Get-WindowsCompiler { return @{ CC="mock-clang"; CXX="mock-clang++" } }; function Initialize-WindowsCompiler {}'
+    Set-Content (Join-Path $fixtureRoot 'script/windows-compiler.ps1') $helper
+    $installer = Join-Path $fixtureRoot 'script/install-windows.ps1'
     & $installer -WhatIf
     & $installer -InstallTools -WhatIf
     if (Test-Path -LiteralPath $root) { throw 'WhatIf changed the filesystem' }
@@ -72,6 +84,7 @@ try {
     New-Item -ItemType Directory -Force -Path (Join-Path $fixtureProject 'script'), (Join-Path $fixtureProject 'nvim') | Out-Null
     Copy-Item -LiteralPath $installer -Destination (Join-Path $fixtureProject 'script/install-windows.ps1')
     Copy-Item -LiteralPath (Join-Path $project 'script/check-tools-windows.ps1') -Destination (Join-Path $fixtureProject 'script/check-tools-windows.ps1')
+    Copy-Item -LiteralPath (Join-Path $fixtureRoot 'script/windows-compiler.ps1') -Destination (Join-Path $fixtureProject 'script/windows-compiler.ps1')
     Set-Content -LiteralPath (Join-Path $fixtureProject 'nvim/init.lua') -Value '-- fixture'
     $installer = Join-Path $fixtureProject 'script/install-windows.ps1'
     $global:NvimInstallTestCalls.Clear()
@@ -120,6 +133,7 @@ try {
         (Join-Path $nestedProject 'script'), (Join-Path $nestedProject 'nvim') | Out-Null
     Copy-Item -LiteralPath $installer -Destination (Join-Path $nestedProject 'script/install-windows.ps1')
     Copy-Item -LiteralPath (Join-Path $project 'script/check-tools-windows.ps1') -Destination (Join-Path $nestedProject 'script/check-tools-windows.ps1')
+    Copy-Item -LiteralPath (Join-Path $fixtureRoot 'script/windows-compiler.ps1') -Destination (Join-Path $nestedProject 'script/windows-compiler.ps1')
     Set-Content -LiteralPath (Join-Path $nestedProject 'nvim/init.lua') -Value '-- fixture'
     $rejected = $false
     try { & (Join-Path $nestedProject 'script/install-windows.ps1') } catch { $rejected = $true }
@@ -130,9 +144,10 @@ try {
 } finally {
     foreach ($name in $savedEnv.Keys) { [Environment]::SetEnvironmentVariable($name, $savedEnv[$name], 'Process') }
     foreach ($name in @('nvim.exe', 'tree-sitter.exe', 'fzf.exe', 'rust-analyzer.exe', 'rustfmt.exe', 'pyright-langserver.cmd',
-        'git.exe', 'curl.exe', 'fd.exe', 'rg.exe', 'clang.exe', 'node.exe', 'npm.cmd')) {
+        'git.exe', 'curl.exe', 'fd.exe', 'rg.exe', 'cargo.exe', 'rustc.exe', 'rustup.exe', 'node.exe', 'npm.cmd')) {
         Remove-Item -LiteralPath ('Function:\' + $name) -ErrorAction SilentlyContinue
     }
     Remove-Variable NvimInstallTestCalls, NvimInstallTestFailure, NvimToolTestCalls, NvimRustTestFailure, NvimVersionTestOld -Scope Global -ErrorAction SilentlyContinue
+    if (Test-Path -LiteralPath $fixtureRoot) { Remove-Item $fixtureRoot -Recurse -Force }
     if (Test-Path -LiteralPath $root) { Remove-Item -LiteralPath $root -Recurse -Force }
 }

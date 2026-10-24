@@ -89,12 +89,14 @@ bash script/install-macos.sh
 ```powershell
 # Windows PowerShell: install prerequisites with winget, then configure Neovim
 powershell -NoProfile -ExecutionPolicy Bypass -File .\script\install-windows.ps1 -InstallTools
+# Windows toolchain: LLVM-MinGW UCRT + Rust windows-gnullvm; no VS Build Tools
 # Tools only / 도구만 설치 / ツールのみ:
 # powershell -NoProfile -ExecutionPolicy Bypass -File .\script\install-tools-windows.ps1
 ```
 
 Linux/macOS는 도구 설치 → 설정 백업/연결 → 플러그인 복원 → 파서 설치 →
 시작·검색 검사를 수행합니다. Windows는 `-InstallTools`로 winget 도구 설치를 함께 수행하며, 옵션을 생략하면 기존 도구를 점검한 뒤 설정을 백업/복사합니다.
+Windows는 LLVM-MinGW UCRT와 Rust `windows-gnullvm`을 사용하며 Visual Studio Build Tools를 설치하지 않습니다.
 Windows 점검만 실행하려면 `check-tools-windows.ps1`을 사용하세요.
 도구만 설치하려면 `install-tools-linux.sh`, `install-tools-macos.sh`를 사용합니다.
 Unix에서 도구 설치를 생략하려면 `--skip-tools`를 지정합니다.
@@ -103,6 +105,8 @@ Neovim·tree-sitter는 실행 시 공식 최신 안정 릴리스를 조회하며
 최소 버전 검사는 유지합니다. 로컬 `lazy-lock.json`이 없으면 `Lazy sync`로 플러그인 설정이 허용하는 최신 버전을 설치하고, 있으면 해당 버전으로 복원합니다.
 lockfile은 로컬에서 생성하며 Git 추적에서 제외합니다.
 실제 변경 없이 명령을 확인하려면 Unix는 `--dry-run`, Windows는 `-WhatIf`를 사용합니다.
+
+세 플랫폼 모두 선언된 플러그인과 의존성을 Lazy가 다운로드합니다. 기존 플랫폼의 플러그인 바이너리를 복사하지 않습니다.
 
 Linux/macOS는 저장소의 `nvim/`을 `${XDG_CONFIG_HOME:-$HOME/.config}/nvim`에
 연결합니다. Windows는 관리자 권한이 필요한 심볼릭 링크 대신
@@ -215,6 +219,7 @@ Windows 설치기 백업·실패 처리 검사는 별도 PowerShell 세션에서
 ```powershell
 powershell -NoProfile -File tests/test_install_windows.ps1
 powershell -NoProfile -File tests/test_install_tools_windows.ps1
+powershell -NoProfile -File tests/test_windows_compiler.ps1
 ```
 
 
@@ -300,6 +305,7 @@ bash script/install-macos.sh
 ```powershell
 # Windows PowerShell: install prerequisites with winget, then configure Neovim
 powershell -NoProfile -ExecutionPolicy Bypass -File .\script\install-windows.ps1 -InstallTools
+# Windows toolchain: LLVM-MinGW UCRT + Rust windows-gnullvm; no VS Build Tools
 # Tools only / 도구만 설치 / ツールのみ:
 # powershell -NoProfile -ExecutionPolicy Bypass -File .\script\install-tools-windows.ps1
 ```
@@ -307,6 +313,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\script\install-windows.ps1
 Linux/macOS installers install tools, back up/link configuration, restore plugins,
 install parsers, and run startup/search checks. Windows installs prerequisites with winget when `-InstallTools` is supplied; otherwise it
 checks existing tools before backing up/copying configuration and installing plugins.
+Windows uses LLVM-MinGW UCRT and Rust `windows-gnullvm`, without Visual Studio Build Tools.
 Use `check-tools-windows.ps1` to inspect Windows prerequisites only.
 Use `install-tools-linux.sh` or `install-tools-macos.sh` for tools alone, or
 `--skip-tools` on Unix to keep existing tools.
@@ -316,6 +323,8 @@ package managers. Minimum compatibility checks remain. Without a local `lazy-loc
 `Lazy sync` installs the latest versions allowed by plugin specifications; an existing
 lockfile restores its recorded versions. The generated lockfile is local and Git-ignored. Preview commands without
 changes with `--dry-run` on Unix or `-WhatIf` on Windows.
+
+On all three platforms Lazy downloads every declared plugin and dependency locally; existing platform binaries are not copied.
 
 Linux/macOS link `nvim/` to `${XDG_CONFIG_HOME:-$HOME/.config}/nvim`; keep the
 repository in place. Windows copies it to `%LOCALAPPDATA%/nvim` without requiring
@@ -431,6 +440,7 @@ mocked; this does not validate native Windows tool installation.
 ```powershell
 powershell -NoProfile -File tests/test_install_windows.ps1
 powershell -NoProfile -File tests/test_install_tools_windows.ps1
+powershell -NoProfile -File tests/test_windows_compiler.ps1
 ```
 
 
@@ -512,6 +522,7 @@ bash script/install-macos.sh
 ```powershell
 # Windows PowerShell: install prerequisites with winget, then configure Neovim
 powershell -NoProfile -ExecutionPolicy Bypass -File .\script\install-windows.ps1 -InstallTools
+# Windows toolchain: LLVM-MinGW UCRT + Rust windows-gnullvm; no VS Build Tools
 # Tools only / 도구만 설치 / ツールのみ:
 # powershell -NoProfile -ExecutionPolicy Bypass -File .\script\install-tools-windows.ps1
 ```
@@ -519,6 +530,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\script\install-windows.ps1
 Linux/macOS はツール導入、設定のバックアップとリンク、プラグイン復元、
 パーサー導入、起動・検索テストを実行します。Windows は `-InstallTools` で
 WinGet によるツール導入も行い、省略時は既存ツールを確認して設定を導入します。
+Windows は LLVM-MinGW UCRT と Rust `windows-gnullvm` を使用し、Visual Studio Build Tools を導入しません。
 Windows の確認のみは `check-tools-windows.ps1` を使用します。
 ツールのみは `install-tools-linux.sh`、`install-tools-macos.sh`、Unix での
 ツール導入省略は `--skip-tools` を指定します。
@@ -528,6 +540,8 @@ Neovim と tree-sitter は実行時に公式の最新安定リリースを取得
 `Lazy sync` でプラグイン設定が許可する最新版を導入し、あれば記録されたバージョンを復元します。
 生成されるロックファイルはローカル専用で、Git の追跡対象外です。
 変更せずに確認するには Unix は `--dry-run`、Windows は `-WhatIf` を指定します。
+
+3つのプラットフォームとも Lazy が宣言されたプラグインと依存をダウンロードします。別環境のバイナリーはコピーしません。
 
 Linux/macOS は `nvim/` を `${XDG_CONFIG_HOME:-$HOME/.config}/nvim` にリンクするため、
 リポジトリを移動しないでください。Windows は管理者権限の必要なリンクを使わず
@@ -635,6 +649,7 @@ Windows のバックアップ・失敗処理テストは、新しい PowerShell 
 ```powershell
 powershell -NoProfile -File tests/test_install_windows.ps1
 powershell -NoProfile -File tests/test_install_tools_windows.ps1
+powershell -NoProfile -File tests/test_windows_compiler.ps1
 ```
 
 
@@ -674,7 +689,6 @@ installation as an alternative to WinGet. WinGet を使わない手動導入用�
 | curl | [Windows downloads](https://curl.se/windows/) |
 | Node.js/npm | [Latest LTS](https://nodejs.org/en/download) |
 | Rust/rustup | [Install Rust](https://rust-lang.org/tools/install/) |
-| LLVM/Clang | [Latest release](https://github.com/llvm/llvm-project/releases/latest) |
-| MSVC / Windows SDK | [C++ Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/) |
+| LLVM-MinGW UCRT | [Latest release](https://github.com/mstorsjo/llvm-mingw/releases/latest) |
 | Pyright | [Installation instructions](https://github.com/microsoft/pyright#command-line) |
 | Nerd Font (optional) | [Font downloads](https://www.nerdfonts.com/font-downloads) |

@@ -1,3 +1,6 @@
+-- Also prepare future interactive parser builds, beyond the installer process.
+require('compat').setup_windows_toolchain()
+
 -- Bootstrap lazy.nvim
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not (vim.uv or vim.loop).fs_stat(lazypath) then

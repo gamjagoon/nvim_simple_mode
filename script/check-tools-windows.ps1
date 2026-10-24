@@ -22,49 +22,51 @@ $tools = @(
     @{ Command = 'rg.exe'; Minimum = ''; Url = 'https://github.com/BurntSushi/ripgrep/releases/latest' }
     @{ Command = 'fzf.exe'; Minimum = '0.52.1'; Url = 'https://github.com/junegunn/fzf/releases/latest' }
     @{ Command = 'tree-sitter.exe'; Minimum = '0.26.1'; Url = 'https://github.com/tree-sitter/tree-sitter/releases/latest' }
-    @{ Command = 'clang.exe'; Minimum = ''; Url = 'https://github.com/llvm/llvm-project/releases/latest' }
     @{ Command = 'node.exe'; Minimum = ''; Url = 'https://nodejs.org/en/download' }
     @{ Command = 'npm.cmd'; Minimum = ''; Url = 'https://nodejs.org/en/download' }
+    @{ Command = 'cargo.exe'; Minimum = ''; Url = 'https://rustup.rs/' }
+    @{ Command = 'rustc.exe'; Minimum = ''; Url = 'https://rustup.rs/' }
+    @{ Command = 'rustup.exe'; Minimum = ''; Url = 'https://rustup.rs/' }
     @{ Command = 'rust-analyzer.exe'; Minimum = ''; Url = 'https://rustup.rs/' }
     @{ Command = 'rustfmt.exe'; Minimum = ''; Url = 'https://rustup.rs/' }
     @{ Command = 'pyright-langserver.cmd'; Minimum = ''; Url = 'https://github.com/microsoft/pyright/blob/main/docs/installation.md' }
 )
-Write-Host 'Install Windows x64 tools manually from these official pages (latest stable releases; Node.js LTS):'
+Write-Host 'Install Windows x64 tools using install-tools-windows.ps1 or these official pages:'
 foreach ($tool in $tools) { Write-Host ('  {0}: {1}' -f $tool.Command, $tool.Url) }
-Write-Host '  MSVC Build Tools and Windows SDK (Desktop development with C++): https://visualstudio.microsoft.com/downloads/'
+Write-Host '  LLVM-MinGW UCRT x64: https://github.com/mstorsjo/llvm-mingw/releases'
+Write-Host '  Rust host: stable-x86_64-pc-windows-gnullvm'
 Write-Host 'Setup instructions: docs/windows-setup.md'
 if ($WhatIfPreference) { return }
 if ($env:OS -ne 'Windows_NT') { throw 'Run this checker in native Windows PowerShell. For WSL use install-linux.sh.' }
-
 $failures = @()
+. (Join-Path $PSScriptRoot 'windows-compiler.ps1')
+try { $null = Get-WindowsCompiler } catch { $failures += [string]$_ }
 $originalRustAutoInstall = [Environment]::GetEnvironmentVariable('RUSTUP_AUTO_INSTALL', 'Process')
 try {
-    # Rustup proxies can install a missing selected toolchain even for --version.
     [Environment]::SetEnvironmentVariable('RUSTUP_AUTO_INSTALL', '0', 'Process')
     foreach ($tool in $tools) {
         $command = $tool.Command
         if (-not (Get-Command $command -ErrorAction SilentlyContinue)) {
-            $failures += "$command is missing. Install manually: $($tool.Url)"
+            $failures += "$command is missing. Install: $($tool.Url)"
             continue
         }
-        # The language server uses stdio, not --version. Its Node runtime is checked separately.
         if ($command -eq 'pyright-langserver.cmd') { continue }
         try {
             $output = (& $command --version 2>&1) -join ' '
             if ($LASTEXITCODE -ne 0) { throw "exit code $LASTEXITCODE; $output" }
-            if ($tool.Minimum -and ($output -notmatch '(\d+\.\d+\.\d+)' -or
-                [version]$Matches[1] -lt [version]$tool.Minimum)) {
+            if ($tool.Minimum -and ($output -notmatch '(\d+\.\d+\.\d+)' -or [version]$Matches[1] -lt [version]$tool.Minimum)) {
                 throw "requires >= $($tool.Minimum); found: $output"
             }
-        } catch {
-            $failures += "$command is not usable: $_. Install/update manually: $($tool.Url)"
-        }
+        } catch { $failures += "$command is not usable: $_. Install/update: $($tool.Url)" }
     }
+    try {
+        $hostInfo = (& rustc.exe -vV 2>&1) -join "`n"
+        if ($LASTEXITCODE -ne 0 -or $hostInfo -notmatch '(?m)^host: x86_64-pc-windows-gnullvm\s*$') { throw 'Rust host must be x86_64-pc-windows-gnullvm.' }
+        $active = (& rustup.exe show active-toolchain 2>&1) -join ' '
+        if ($LASTEXITCODE -ne 0 -or $active -notmatch '^stable-x86_64-pc-windows-gnullvm(?:\s|$)') { throw 'Select stable-x86_64-pc-windows-gnullvm for this process.' }
+    } catch { $failures += [string]$_ }
 } finally {
     [Environment]::SetEnvironmentVariable('RUSTUP_AUTO_INSTALL', $originalRustAutoInstall, 'Process')
 }
-if ($failures.Count -gt 0) {
-    throw (($failures -join [Environment]::NewLine) + [Environment]::NewLine +
-        'Follow docs/windows-setup.md, open a new terminal, then rerun this checker.')
-}
-Write-Host 'Required commands passed. Parser installation will verify the compiler/SDK environment.'
+if ($failures.Count -gt 0) { throw (($failures -join [Environment]::NewLine) + [Environment]::NewLine + 'Follow docs/windows-setup.md, then rerun this checker.') }
+Write-Host 'Required commands passed. Parser installation verifies compilation with LLVM-MinGW.'
